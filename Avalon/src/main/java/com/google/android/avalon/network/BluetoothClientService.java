@@ -45,11 +45,12 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;    // not using binding
+        return null; // not using binding
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "BluetoothClientService starting");
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         mMsgReceiver = new MessageReceiver();
@@ -73,6 +74,7 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
 
     @Override
     public void onDestroy() {
+        Log.d(TAG, "BluetoothClientService getting destroyed");
         super.onDestroy();
         unregisterReceiver(mMsgReceiver);
         unregisterReceiver(mBtScanReceiver);
@@ -124,12 +126,16 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
                 // Get the BluetoothDevice object from the Intent
                 final BluetoothDevice device = intent.getParcelableExtra(
                         BluetoothDevice.EXTRA_DEVICE);
+                Log.d(TAG, "BtScanReceiver found: " + device.getName());
 
                 boolean found = false;
-                for (ParcelUuid uuid : device.getUuids()) {
-                    if (uuid.getUuid().equals(AvalonActivity.CLIENT_SERVER_UUID)) {
-                        mBluetoothAdapter.cancelDiscovery();
-                        found = true;
+                ParcelUuid[] uuids = device.getUuids();
+                if (uuids != null) {
+                    for (ParcelUuid uuid : uuids) {
+                        if (uuid.getUuid().equals(AvalonActivity.CLIENT_SERVER_UUID)) {
+                            mBluetoothAdapter.cancelDiscovery();
+                            found = true;
+                        }
                     }
                 }
 
@@ -137,6 +143,7 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
                     return;
                 }
 
+                Log.d(TAG, "Attempting to connect: " + device.getName());
                 sHandler.post(new ConnectRunnable(device));
             }
         }
@@ -173,6 +180,8 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
                 return;
             }
 
+            Log.d(TAG, "Connection established");
+
             // Connection established, so stop discovery and set the instance socket
             mBluetoothAdapter.cancelDiscovery();
             mServerSocket = socket;
@@ -180,6 +189,9 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
             // Start the reader thread
             mReader = new SocketReader(mServerSocket, BluetoothClientService.this);
             mReader.start();
+
+            // writer manages a handler, so don't need to start it
+            mWriter = new SocketWriter(mServerSocket);
 
             // Send broadcast that connection has been established
             broadcastConnectionStatus(true);

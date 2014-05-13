@@ -15,6 +15,7 @@ import com.google.android.avalon.interfaces.GameStateController;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.network.BaseFromBtMessageReceiver;
+import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.ServiceMessageProtocol;
 
 /**
@@ -45,6 +46,9 @@ public class SetupClientFragment extends Fragment implements ConnectionListener 
         // Attach broadcast listeners
         mReceiver = new MessageReceiver();
         mReceiver.attach(getActivity());
+
+        // Start the bt client service
+        getActivity().startService(new Intent(getActivity(), BluetoothClientService.class));
 
         return v;
     }

@@ -20,6 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".avalon.network.BluetoothClientService"
+            android:label="Client side bt service" />
     </application>
 
 </manifest>

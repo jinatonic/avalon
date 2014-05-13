@@ -36,12 +36,11 @@ public class AvalonActivity extends Activity implements GameStateController {
 
         // Resume fragment states and reset pointers
         FragmentManager fm = getFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-        if (fragment == null) {
+        if (fm.findFragmentById(R.id.fragment_container) == null) {
             // Initially show the role selection fragment if fragment is null
             RoleSelectionFragment frag = new RoleSelectionFragment();
             fm.beginTransaction()
-                    .add(R.id.fragment_container, fragment)
+                    .add(R.id.fragment_container, frag)
                     .commit();
         }
 
