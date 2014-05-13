@@ -75,10 +75,8 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
         Fragment fragment = null;
         if (role == Role.SERVER) {
             fragment = new SetupServerFragment();
-            ((SetupServerFragment) fragment).setBtController(this);
         } else {
             fragment = new SetupClientFragment();
-            ((SetupClientFragment) fragment).setBtController(this);
         }
 
         // Instantiate and show the new fragment
@@ -95,8 +93,14 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
         // TODO
     }
 
+    @Override
     public BluetoothAdapter getBluetoothAdapter() {
         return mBluetoothAdapter;
+    }
+
+    @Override
+    public boolean hasServerSocket() {
+        return mServerSocket != null;
     }
 
     @Override

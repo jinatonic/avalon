@@ -10,6 +10,7 @@ public interface BluetoothController {
 
     public BluetoothAdapter getBluetoothAdapter();
 
+    public boolean hasServerSocket();
     public void setServerSocket(BluetoothSocket socket);
     public void addClientSocket(BluetoothSocket socket);
 }

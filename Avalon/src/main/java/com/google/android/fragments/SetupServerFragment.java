@@ -26,14 +26,11 @@ public class SetupServerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBtController = (BluetoothController) getActivity();
 
         new AcceptThread().run();
 
         return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
-    public void setBtController(BluetoothController controller) {
-        mBtController = controller;
     }
 
     private void manageConnectedSocket(BluetoothSocket socket) {

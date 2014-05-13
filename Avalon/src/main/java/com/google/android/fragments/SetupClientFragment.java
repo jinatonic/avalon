@@ -8,6 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.ParcelUuid;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +30,12 @@ import java.io.IOException;
 public class SetupClientFragment extends Fragment {
 
     private BluetoothController mBtController;
+    private static Handler sHandler;
+    static {
+        HandlerThread thread = new HandlerThread("Client connection thread");
+        thread.start();
+        sHandler = new Handler(thread.getLooper());
+    }
 
     private TextView mStatusTextView;
 
@@ -39,13 +50,26 @@ public class SetupClientFragment extends Fragment {
                 final BluetoothDevice device = intent.getParcelableExtra(
                         BluetoothDevice.EXTRA_DEVICE);
 
-                new Thread(new Runnable() {
+                boolean found = false;
+                for (ParcelUuid uuid : device.getUuids()) {
+                    if (uuid.getUuid().equals(AvalonActivity.CLIENT_SERVER_UUID)) {
+                        mBtController.getBluetoothAdapter().cancelDiscovery();
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    return;
+                }
+
+                sHandler.post(new Runnable() {
                     public void run() {
                         BluetoothSocket socket = null;
                         try {
                             socket = device.createRfcommSocketToServiceRecord(
                                     AvalonActivity.CLIENT_SERVER_UUID);
                         } catch (IOException e) {
+                            e.printStackTrace();
                             return;
                         }
 
@@ -67,27 +91,27 @@ public class SetupClientFragment extends Fragment {
                         show(true /* discovered */);
                     }
                 });
-
             }
         }
     };
-
-    public void setBtController(BluetoothController controller) {
-        mBtController = controller;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.client_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.client_status_text);
+        mBtController = (BluetoothController) getActivity();
 
-        // Register the BroadcastReceiver
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        getActivity().registerReceiver(mReceiver, filter);
+        if (!mBtController.hasServerSocket()) {
+            // Register the BroadcastReceiver
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            getActivity().registerReceiver(mReceiver, filter);
 
-        // Start discovery
-        mBtController.getBluetoothAdapter().startDiscovery();
-        show(false /* discovered */);
+            // Start discovery
+            mBtController.getBluetoothAdapter().startDiscovery();
+            show(false /* discovered */);
+        } else {
+            show(true /* discovered */);
+        }
 
         return v;
     }
@@ -100,8 +124,12 @@ public class SetupClientFragment extends Fragment {
         getActivity().unregisterReceiver(mReceiver);
     }
 
-    private void show(boolean discovered) {
-        mStatusTextView.setText(discovered ?
-            "Connected!" : "Searching for server...");
+    private void show(final boolean discovered) {
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                mStatusTextView.setText(discovered ?
+                        "Connected!" : "Searching for server...");
+            }
+        });
     }
 }
