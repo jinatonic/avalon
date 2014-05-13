@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -27,6 +28,7 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
     public static final UUID CLIENT_SERVER_UUID = new UUID(123456789, 987654321);
 
     protected BluetoothAdapter mBluetoothAdapter;
+    protected BluetoothSocket mServerSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +96,16 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
 
     public BluetoothAdapter getBluetoothAdapter() {
         return mBluetoothAdapter;
+    }
+
+    @Override
+    public void setServerSocket(BluetoothSocket socket) {
+        mServerSocket = socket;
+    }
+
+    @Override
+    public void addClientSocket(BluetoothSocket socket) {
+        // TODO
     }
 
 }

@@ -1,6 +1,7 @@
 package com.google.android.interfaces;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothSocket;
 
 /**
  * Created by jinyan on 5/12/14.
@@ -8,4 +9,7 @@ import android.bluetooth.BluetoothAdapter;
 public interface BluetoothController {
 
     public BluetoothAdapter getBluetoothAdapter();
+
+    public void setServerSocket(BluetoothSocket socket);
+    public void addClientSocket(BluetoothSocket socket);
 }
