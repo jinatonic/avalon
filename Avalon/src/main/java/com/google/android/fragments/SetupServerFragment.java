@@ -4,13 +4,16 @@ import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.AvalonActivity;
+import com.google.android.R;
 import com.google.android.interfaces.BluetoothController;
 
 import java.io.IOException;
@@ -21,22 +24,27 @@ import java.io.IOException;
 public class SetupServerFragment extends Fragment {
 
     private BluetoothController mBtController;
-    private BluetoothAdapter mBluetoothAdapter;
+    private TextView mStatusTextView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        mBtController = (BluetoothController) getActivity();
 
-        new AcceptThread().run();
+        View v = inflater.inflate(R.layout.server_setup_fragment, parent, false);
+        mStatusTextView = (TextView) v.findViewById(R.id.server_status_text);
 
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
+        Intent discoverableIntent = new
+                Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+        startActivity(discoverableIntent);
+        new AcceptThread().start();
 
-    public void setBtController(BluetoothController controller) {
-        mBtController = controller;
+        Log.i(AvalonActivity.TAG, "onCreate complete.");
+        return v;
     }
 
     private void manageConnectedSocket(BluetoothSocket socket) {
+        mStatusTextView.setText("Connection established");
         Log.i(AvalonActivity.TAG, "Connection established");
     }
 
@@ -49,8 +57,8 @@ public class SetupServerFragment extends Fragment {
             BluetoothServerSocket tmp = null;
             try {
                 // MY_UUID is the app's UUID string, also used by the client code
-                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(
-                        "TODO - NAME", AvalonActivity.CLIENT_SERVER_UUID);
+                tmp = mBtController.getBluetoothAdapter().listenUsingRfcommWithServiceRecord(
+                        "Avalon", AvalonActivity.CLIENT_SERVER_UUID);
             } catch (IOException e) { }
             mmServerSocket = tmp;
         }
@@ -59,6 +67,13 @@ public class SetupServerFragment extends Fragment {
             BluetoothSocket socket = null;
             // Keep listening until exception occurs or a socket is returned
             while (true) {
+                Log.i(AvalonActivity.TAG, "Waiting for connection...");
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mStatusTextView.setText("Waiting for connection...");
+                    }
+                });
                 try {
                     socket = mmServerSocket.accept();
                 } catch (IOException e) {

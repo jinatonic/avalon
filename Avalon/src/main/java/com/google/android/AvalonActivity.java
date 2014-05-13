@@ -75,7 +75,6 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
         Fragment fragment = null;
         if (role == Role.SERVER) {
             fragment = new SetupServerFragment();
-            ((SetupServerFragment) fragment).setBtController(this);
         } else {
             fragment = new SetupClientFragment();
             ((SetupClientFragment) fragment).setBtController(this);
