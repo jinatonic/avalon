@@ -102,7 +102,10 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
      */
     @Override
     public void onMessageReceived(AvalonMessage msg) {
-        // TODO
+        Log.i(TAG, "broadcasting avalon message " + msg);
+        Bundle extra = new Bundle();
+        extra.putSerializable(ServiceMessageProtocol.AVALON_MESSAGE_KEY, msg);
+        ServiceMessageProtocol.broadcastFromBt(this, extra);
     }
 
     // A BroadcastReceiver for our custom messages
@@ -139,6 +142,9 @@ public class BluetoothClientService extends Service implements AvalonMessageHand
         }
     };
 
+    /**
+     * Custom runnable to run connect bt on the background.
+     */
     public class ConnectRunnable implements Runnable {
         private BluetoothDevice mDevice;
 

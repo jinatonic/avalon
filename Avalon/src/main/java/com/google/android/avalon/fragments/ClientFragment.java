@@ -1,6 +1,8 @@
 package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,17 +12,22 @@ import android.widget.TextView;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
+import com.google.android.avalon.interfaces.ConnectionListener;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.RoleAssignment;
+import com.google.android.avalon.network.BaseFromBtMessageReceiver;
+import com.google.android.avalon.network.ServiceMessageProtocol;
 
 /**
  * Created by jinyan on 5/12/14.
  */
-public class ClientFragment extends Fragment {
+public class ClientFragment extends Fragment implements ConnectionListener {
 
     private TextView mRoleAssignmentText;
     private TextView mSeenPlayersLabel;
     private TextView mSeenPlayersText;
+
+    private BaseFromBtMessageReceiver mReceiver;
 
     private RoleAssignment mRoleAssignment;
 
@@ -32,9 +39,21 @@ public class ClientFragment extends Fragment {
         mSeenPlayersLabel = (TextView) v.findViewById(R.id.seen_players_label);
         mSeenPlayersText = (TextView) v.findViewById(R.id.seen_players_text);
 
+        mReceiver = new MessageReceiver();
+        mReceiver.attach(getActivity());
+
         return v;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mReceiver.detach(getActivity());
+    }
+
+    /**
+     * Helper callback to perform action for each type of AvalonMessage
+     */
     public void handleMessage(AvalonMessage message) {
         if (message instanceof RoleAssignment) {
             setRoleAssignment((RoleAssignment) message);
@@ -66,6 +85,28 @@ public class ClientFragment extends Fragment {
                 }
             }
             mSeenPlayersText.setText(seenPlayers);
+        }
+    }
+
+    @Override
+    public void onConnectionStatusChanged(boolean connected) {
+        // TODO: probably should have a connection status text somewhere in this fragment
+    }
+
+    private class MessageReceiver extends BaseFromBtMessageReceiver {
+
+        public MessageReceiver() {
+            super(ClientFragment.this);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
+                AvalonMessage msg = (AvalonMessage) intent.getSerializableExtra(
+                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+                handleMessage(msg);
+            }
+            super.onReceive(context, intent);
         }
     }
 }

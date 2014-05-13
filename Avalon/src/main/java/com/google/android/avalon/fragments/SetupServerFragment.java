@@ -1,5 +1,6 @@
 package com.google.android.avalon.fragments;
 
+import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -19,7 +20,7 @@ import java.io.IOException;
 /**
  * Created by jinyan on 5/12/14.
  */
-public class SetupServerFragment extends SetupFragment {
+public class SetupServerFragment extends Fragment {
 
     private TextView mStatusTextView;
 
