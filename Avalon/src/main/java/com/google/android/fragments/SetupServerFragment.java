@@ -33,6 +33,7 @@ public class SetupServerFragment extends Fragment {
         View v = inflater.inflate(R.layout.server_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.server_status_text);
 
+        // TODO add flag to prevent spamming this.
         Intent discoverableIntent = new
                 Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
