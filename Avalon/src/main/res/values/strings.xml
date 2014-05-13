@@ -7,4 +7,7 @@
     <string name="server">Server</string>
     <string name="client">Client</string>
 
+    <string name="role_label">You are: </string>
+    <string name="seen_players_label">You see: </string>
+
 </resources>

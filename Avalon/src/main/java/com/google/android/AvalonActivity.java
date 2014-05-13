@@ -8,9 +8,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.avalon.model.AvalonRole;
+import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.fragments.ClientFragment;
 import com.google.android.fragments.RoleSelectionFragment;
 import com.google.android.fragments.ServerFragment;
@@ -19,6 +22,8 @@ import com.google.android.fragments.SetupServerFragment;
 import com.google.android.interfaces.BluetoothController;
 import com.google.android.interfaces.RoleController;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.UUID;
 
 
@@ -53,7 +58,7 @@ public class AvalonActivity extends Activity implements RoleController, Bluetoot
             bluetoothNotSupported();
         }
 
-        if (!mBluetoothAdapter.isEnabled()) {
+        else if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
