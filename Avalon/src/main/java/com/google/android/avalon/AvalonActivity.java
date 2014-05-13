@@ -1,4 +1,4 @@
-package com.google.android;
+package com.google.android.avalon;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -7,14 +7,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.android.fragments.RoleSelectionFragment;
-import com.google.android.fragments.SetupClientFragment;
-import com.google.android.fragments.SetupFragment;
-import com.google.android.fragments.SetupServerFragment;
-import com.google.android.interfaces.RoleController;
+import com.google.android.R;
+import com.google.android.avalon.network.ServiceMessageProtocol;
+import com.google.android.avalon.fragments.RoleSelectionFragment;
+import com.google.android.avalon.fragments.SetupClientFragment;
+import com.google.android.avalon.fragments.SetupFragment;
+import com.google.android.avalon.fragments.SetupServerFragment;
+import com.google.android.avalon.interfaces.RoleController;
 
 import java.util.UUID;
 
@@ -27,10 +30,17 @@ public class AvalonActivity extends Activity implements RoleController {
 
     private SetupFragment mSetupFragment;
 
+    private MessageReceiver mReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avalon);
+
+        // Register service listener
+        mReceiver = new MessageReceiver();
+        IntentFilter filter = new IntentFilter(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT);
+        registerReceiver(mReceiver, filter);
 
         // Resume fragment states and reset pointers
         FragmentManager fm = getFragmentManager();
@@ -57,6 +67,12 @@ public class AvalonActivity extends Activity implements RoleController {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -93,12 +109,13 @@ public class AvalonActivity extends Activity implements RoleController {
         // TODO
     }
 
+    /**
+     * The activity will be the main distributor of messages from the client service to its frags
+     */
     private class MessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT)) {
-                // TODO
-            }
+            // TODO
         }
     }
 

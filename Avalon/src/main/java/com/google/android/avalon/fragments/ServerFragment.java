@@ -1,4 +1,4 @@
-package com.google.android.fragments;
+package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;

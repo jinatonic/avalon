@@ -1,6 +1,5 @@
-package com.google.android.fragments;
+package com.google.android.avalon.fragments;
 
-import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -12,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.AvalonActivity;
+import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
 
 import java.io.IOException;

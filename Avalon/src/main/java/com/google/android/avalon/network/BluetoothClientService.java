@@ -1,4 +1,4 @@
-package com.google.android;
+package com.google.android.avalon.network;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -13,13 +13,20 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.ParcelUuid;
+import android.util.Log;
+
+import com.google.android.avalon.AvalonActivity;
+import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.interfaces.AvalonMessageHandler;
 
 import java.io.IOException;
 
 /**
  * Created by jinyan on 5/13/14.
  */
-public class BluetoothClientService extends Service {
+public class BluetoothClientService extends Service implements AvalonMessageHandler {
+
+    private static final String TAG = BluetoothClientService.class.getSimpleName();
 
     private static Handler sHandler;
     static {
@@ -30,6 +37,8 @@ public class BluetoothClientService extends Service {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket mServerSocket;
+    private SocketReader mReader;
+    private SocketWriter mWriter;
 
     private MessageReceiver mMsgReceiver;
     private BtScanReceiver mBtScanReceiver;
@@ -68,9 +77,6 @@ public class BluetoothClientService extends Service {
         unregisterReceiver(mMsgReceiver);
         unregisterReceiver(mBtScanReceiver);
 
-        sHandler.getLooper().quit();
-        sHandler = null;
-
         if (mServerSocket != null) {
             try {
                 mServerSocket.close();
@@ -85,25 +91,30 @@ public class BluetoothClientService extends Service {
      * Helper function to broadcast connection status to the activity
      */
     private void broadcastConnectionStatus(boolean connected) {
+        Log.i(TAG, "broadcastConnectionStatus: " + connected);
         Bundle extra = new Bundle();
         extra.putBoolean(ServiceMessageProtocol.CONNECTION_STATUS_KEY, connected);
         ServiceMessageProtocol.broadcastFromBt(this, extra);
     }
 
+    /**
+     * Callback interface for SocketReader to inform the service of new data
+     */
+    @Override
+    public void onMessageReceived(AvalonMessage msg) {
+        // TODO
+    }
+
     // A BroadcastReceiver for our custom messages
     private class MessageReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ServiceMessageProtocol.TO_BT_SERVICE_INTENT)) {
-                // TODO: handle
-            }
+        @Override public void onReceive(Context context, Intent intent) {
+            // TODO: handle
         }
     }
 
     // A BroadcastReceiver for ACTION_FOUND
     private class BtScanReceiver extends BroadcastReceiver {
-
-        public void onReceive(Context context, Intent intent) {
+        @Override public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
@@ -159,6 +170,10 @@ public class BluetoothClientService extends Service {
             // Connection established, so stop discovery and set the instance socket
             mBluetoothAdapter.cancelDiscovery();
             mServerSocket = socket;
+
+            // Start the reader thread
+            mReader = new SocketReader(mServerSocket, BluetoothClientService.this);
+            mReader.start();
 
             // Send broadcast that connection has been established
             broadcastConnectionStatus(true);

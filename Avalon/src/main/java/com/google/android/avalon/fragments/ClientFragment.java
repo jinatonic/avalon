@@ -1,4 +1,4 @@
-package com.google.android.fragments;
+package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -8,14 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.AvalonActivity;
+import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
 import com.google.android.avalon.model.AvalonMessage;
-import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.RoleAssignment;
-
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * Created by jinyan on 5/12/14.

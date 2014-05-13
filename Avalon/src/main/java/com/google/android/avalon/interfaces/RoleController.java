@@ -1,4 +1,4 @@
-package com.google.android.interfaces;
+package com.google.android.avalon.interfaces;
 
 /**
  * Created by jinyan on 5/12/14.

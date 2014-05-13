@@ -1,4 +1,4 @@
-package com.google.android;
+package com.google.android.avalon.network;
 
 import android.content.Context;
 import android.content.Intent;

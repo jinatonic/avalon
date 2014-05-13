@@ -1,4 +1,4 @@
-package com.google.android.fragments;
+package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.R;
-import com.google.android.interfaces.RoleController;
+import com.google.android.avalon.interfaces.RoleController;
 
 public class RoleSelectionFragment extends Fragment {
 
