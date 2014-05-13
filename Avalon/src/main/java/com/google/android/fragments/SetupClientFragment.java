@@ -62,35 +62,7 @@ public class SetupClientFragment extends Fragment {
                     return;
                 }
 
-                sHandler.post(new Runnable() {
-                    public void run() {
-                        BluetoothSocket socket = null;
-                        try {
-                            socket = device.createRfcommSocketToServiceRecord(
-                                    AvalonActivity.CLIENT_SERVER_UUID);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return;
-                        }
-
-                        try {
-                            // Try to establish the connection with the server
-                            socket.connect();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            try {
-                                socket.close();
-                            } catch (IOException el) { }
-                            return;
-                        }
-
-                        // Connection established, so stop discovery and set the instance socket
-                        mBtController.getBluetoothAdapter().cancelDiscovery();
-                        mBtController.setServerSocket(socket);
-
-                        show(true /* discovered */);
-                    }
-                });
+                sHandler.post(new ConnectRunnable(device));
             }
         }
     };
@@ -131,5 +103,41 @@ public class SetupClientFragment extends Fragment {
                         "Connected!" : "Searching for server...");
             }
         });
+    }
+
+    public class ConnectRunnable implements Runnable {
+        private BluetoothDevice mDevice;
+
+        public ConnectRunnable(BluetoothDevice device) {
+            mDevice = device;
+        }
+
+        public void run() {
+            BluetoothSocket socket = null;
+            try {
+                socket = mDevice.createRfcommSocketToServiceRecord(
+                        AvalonActivity.CLIENT_SERVER_UUID);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            try {
+                // Try to establish the connection with the server
+                socket.connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+                try {
+                    socket.close();
+                } catch (IOException el) { }
+                return;
+            }
+
+            // Connection established, so stop discovery and set the instance socket
+            mBtController.getBluetoothAdapter().cancelDiscovery();
+            mBtController.setServerSocket(socket);
+
+            show(true /* discovered */);
+        }
     }
 }
