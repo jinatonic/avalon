@@ -11,7 +11,7 @@ import com.google.android.R;
 /**
  * Created by jinyan on 5/12/14.
  */
-public class ClientFragment extends BluetoothConnectionFragment {
+public class ClientFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {

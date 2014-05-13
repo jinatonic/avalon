@@ -11,7 +11,6 @@ import android.view.MenuItem;
 import com.google.android.fragments.ClientFragment;
 import com.google.android.fragments.RoleSelectionFragment;
 import com.google.android.fragments.ServerFragment;
-import com.google.android.fragments.SetupServerFragment;
 import com.google.android.interfaces.RoleController;
 
 
@@ -37,7 +36,7 @@ public class AvalonActivity extends Activity implements RoleController {
     public void onRoleSelected(Role role) {
         Fragment fragment = null;
         if (role == Role.SERVER) {
-            fragment = new SetupServerFragment();
+            fragment = new ServerFragment();
         } else {
             fragment = new ClientFragment();
         }
