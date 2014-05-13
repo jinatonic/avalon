@@ -23,6 +23,8 @@ import com.google.android.avalon.network.ServiceMessageProtocol;
  */
 public class ClientFragment extends Fragment implements ConnectionListener {
 
+    public static final String EXTRA_ROLE_ASSIGNMENT = "extra_role_assignment";
+
     private TextView mRoleAssignmentText;
     private TextView mSeenPlayersLabel;
     private TextView mSeenPlayersText;
@@ -31,6 +33,16 @@ public class ClientFragment extends Fragment implements ConnectionListener {
 
     private RoleAssignment mRoleAssignment;
 
+    public static ClientFragment newInstance(RoleAssignment assignment) {
+        Bundle args = new Bundle();
+        args.putSerializable(EXTRA_ROLE_ASSIGNMENT, assignment);
+
+        ClientFragment fragment = new ClientFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.client_fragment, parent, false);
@@ -38,6 +50,8 @@ public class ClientFragment extends Fragment implements ConnectionListener {
         mRoleAssignmentText = (TextView) v.findViewById(R.id.role_assignment_text);
         mSeenPlayersLabel = (TextView) v.findViewById(R.id.seen_players_label);
         mSeenPlayersText = (TextView) v.findViewById(R.id.seen_players_text);
+
+        setRoleAssignment((RoleAssignment) getArguments().getSerializable(EXTRA_ROLE_ASSIGNMENT));
 
         mReceiver = new MessageReceiver();
         mReceiver.attach(getActivity());

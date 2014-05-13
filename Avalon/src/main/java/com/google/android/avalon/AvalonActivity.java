@@ -88,7 +88,7 @@ public class AvalonActivity extends Activity implements GameStateController {
     @Override
     public void onSetupCompleted(RoleAssignment role) {
         Log.d(TAG, "onSetupCompleted: " + role);
-        Fragment fragment = new ClientFragment();
+        Fragment fragment = ClientFragment.newInstance(role);
 
         // Show the new client fragment after the game starts
         getFragmentManager().beginTransaction()
