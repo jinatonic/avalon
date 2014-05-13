@@ -14,22 +14,18 @@ import android.widget.TextView;
 
 import com.google.android.AvalonActivity;
 import com.google.android.R;
-import com.google.android.interfaces.BluetoothController;
 
 import java.io.IOException;
 
 /**
  * Created by jinyan on 5/12/14.
  */
-public class SetupServerFragment extends Fragment {
+public class SetupServerFragment extends SetupFragment {
 
-    private BluetoothController mBtController;
     private TextView mStatusTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        mBtController = (BluetoothController) getActivity();
-
         View v = inflater.inflate(R.layout.server_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.server_status_text);
 
@@ -58,7 +54,7 @@ public class SetupServerFragment extends Fragment {
             BluetoothServerSocket tmp = null;
             try {
                 // MY_UUID is the app's UUID string, also used by the client code
-                tmp = mBtController.getBluetoothAdapter().listenUsingRfcommWithServiceRecord(
+                tmp = BluetoothAdapter.getDefaultAdapter().listenUsingRfcommWithServiceRecord(
                         "Avalon", AvalonActivity.CLIENT_SERVER_UUID);
             } catch (IOException e) { }
             mmServerSocket = tmp;
