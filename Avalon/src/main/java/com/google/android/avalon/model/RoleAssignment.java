@@ -7,7 +7,7 @@ import java.util.Set;
 /**
 * Created by mikewallstedt on 5/12/14.
 */
-public class RoleAssignment implements AvalonMessage {
+public class RoleAssignment extends AvalonMessage {
     private static final long serialVersionUID = 1L;
 
     public final PlayerName player;

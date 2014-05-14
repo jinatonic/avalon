@@ -5,8 +5,7 @@ import java.util.UUID;
 /**
 * Created by mikewallstedt on 5/12/14.
 */
-
-public class PlayerName implements AvalonMessage {
+public class PlayerName extends AvalonMessage {
     private static final long serialVersionUID = 1L;
 
     public final UUID id;

@@ -1,4 +1,4 @@
-package com.google.android;
+package com.google.android.avalon.network;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,7 @@ public class ServiceMessageProtocol {
     public static final String FROM_BT_SERVICE_INTENT = "from_bt_service_intent";
 
     public static final String CONNECTION_STATUS_KEY = "connection_status_key";
+    public static final String AVALON_MESSAGE_KEY = "avalon_message_key";
 
     public static void broadcastToBt(Context context, Bundle extra) {
         Intent i = new Intent(TO_BT_SERVICE_INTENT);

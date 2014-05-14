@@ -11,11 +11,12 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
 /**
- * Created by jinyan on 5/12/14.
+ * Created by jinyan on 5/13/14.
  */
 public class MessageParser {
-
     private static final String TAG = MessageParser.class.getSimpleName();
+
+    public static final int MAX_NUM_BYTES = 4096;
 
     public static AvalonMessage parse(byte[] input) {
         ByteArrayInputStream bis = new ByteArrayInputStream(input);
@@ -53,6 +54,10 @@ public class MessageParser {
             out = new ObjectOutputStream(bos);
             out.writeObject(wrapper);
             byte[] yourBytes = bos.toByteArray();
+            if (yourBytes.length > MAX_NUM_BYTES) {
+                Log.e(TAG, "Constructed byte array is too long");
+                return null;
+            }
             return yourBytes;
         } catch (IOException e) {
             Log.e(TAG, "Error serializing " + wrapper, e);
@@ -71,7 +76,5 @@ public class MessageParser {
                 // ignore close exception
             }
         }
-
     }
-
 }
