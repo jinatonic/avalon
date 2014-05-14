@@ -12,6 +12,7 @@ import com.google.android.AvalonActivity;
 import com.google.android.R;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.AvalonRole;
+import com.google.android.avalon.model.PlayerName;
 import com.google.android.avalon.model.RoleAssignment;
 
 import java.util.Arrays;
@@ -63,8 +64,8 @@ public class ClientFragment extends Fragment {
         } else {
             StringBuilder seenPlayers = new StringBuilder();
             int i = 0;
-            for (String player: mRoleAssignment.seenPlayers) {
-                seenPlayers.append(player);
+            for (PlayerName player: mRoleAssignment.seenPlayers) {
+                seenPlayers.append(player.name);
                 if (i++ < mRoleAssignment.seenPlayers.size() - 1) {
                     seenPlayers.append(", ");
                 }
