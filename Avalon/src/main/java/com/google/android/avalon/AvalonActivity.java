@@ -79,6 +79,12 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
         Fragment fragment;
         // Set up the appropriate fragments and initialize the services
         if (isServer) {
+            // TODO add flag to prevent spamming this.
+            Intent discoverableIntent = new
+                    Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            startActivity(discoverableIntent);
+
             fragment = new SetupServerFragment();
             Intent i = new Intent(this, BluetoothServerService.class);
             // TODO: add input for this
