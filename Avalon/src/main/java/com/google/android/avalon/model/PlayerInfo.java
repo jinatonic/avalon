@@ -9,6 +9,7 @@ public class PlayerInfo extends AvalonMessage {
     private static final long serialVersionUID = 1L;
 
     public final UUID id;
+    public String oldName;  // used to either change name or notify to remove
     public String name;
 
     public PlayerInfo(UUID id, String name) {

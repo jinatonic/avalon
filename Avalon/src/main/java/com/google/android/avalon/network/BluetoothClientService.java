@@ -42,7 +42,8 @@ public class BluetoothClientService extends BluetoothService {
     private BluetoothSocket mServerSocket;
     private SocketReader mReader;
     private SocketWriter mWriter;
-    private Set<PlayerInfo> mPlayerInfo;    // will ever only contain a single item
+    private PlayerInfo mPlayerInfo;
+    private Set<PlayerInfo> mPlayerInfoSet; // for convenience
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -55,8 +56,9 @@ public class BluetoothClientService extends BluetoothService {
             Log.e(TAG, "BluetoothClientService launched without PlayerInfo");
             return broadcastErrorAndStop();
         }
-        mPlayerInfo = new HashSet<PlayerInfo>();
-        mPlayerInfo.add((PlayerInfo) player);
+        mPlayerInfo = (PlayerInfo) player;
+        mPlayerInfoSet = new HashSet<PlayerInfo>();
+        mPlayerInfoSet.add(mPlayerInfo);
         mSeenAddresses = new HashSet<String>();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -99,7 +101,7 @@ public class BluetoothClientService extends BluetoothService {
     @Override
     protected Set<PlayerInfo> getConnected() {
         if (mServerSocket != null && mServerSocket.isConnected()) {
-            return mPlayerInfo;
+            return mPlayerInfoSet;
         }
         return null;
     }
@@ -108,7 +110,7 @@ public class BluetoothClientService extends BluetoothService {
      * Callback interface for SocketReader to inform the service of new data
      */
     @Override
-    public void onBtMessageReceived(AvalonMessage msg) {
+    public void onBtMessageReceived(BluetoothSocket socket, AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
         showToast("Received: " + msg);
     }
@@ -209,6 +211,9 @@ public class BluetoothClientService extends BluetoothService {
 
                 // writer manages a handler, so don't need to start it
                 mWriter = new SocketWriter(mServerSocket, BluetoothClientService.this);
+
+                // Send out client information
+                mWriter.send(mPlayerInfo);
 
                 // Send broadcast that connection has been established
                 broadcastConnectionStatus();

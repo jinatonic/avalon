@@ -26,7 +26,8 @@ public class AssignmentFactory {
         this.mGameConfiguration = mGameConfiguration;
     }
 
-    public InitialAssignments getAssignments(List<PlayerInfo> players) {
+    public InitialAssignments getAssignments(Set<PlayerInfo> playersSet) {
+        List<PlayerInfo> players = new ArrayList<PlayerInfo>(playersSet);
         List<AvalonRole> rolesInPlay = getRolesInPlay();
         if (players.size() != rolesInPlay.size()) {
             throw new IllegalStateException(

@@ -3,11 +3,9 @@ package com.google.android.avalon.network;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import com.google.android.avalon.fragments.ClientFragment;
 import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.MessageParser;
-import com.google.android.avalon.interfaces.AvalonMessageHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +41,7 @@ public class SocketReader extends Thread {
                 bytes = is.read(buffer);
                 AvalonMessage msg = MessageParser.parse(buffer);
                 if (msg != null) {
-                    mController.onBtMessageReceived(msg);
+                    mController.onBtMessageReceived(mSocket, msg);
                 }
             }
         } catch (IOException e) {

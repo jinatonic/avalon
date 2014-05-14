@@ -11,6 +11,7 @@ import android.util.Log;
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.rules.GameStateController;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ public class BluetoothServerService extends BluetoothService {
     private static final String TAG = BluetoothServerService.class.getSimpleName();
 
     public static final String NUM_PLAYERS_KEY = "num_players_key";
+
+    private GameStateController mGameStateController;
 
     private int mNumPlayers;
     private Map<PlayerInfo, BluetoothSocket> mPlayerSocketMap =
@@ -43,6 +46,8 @@ public class BluetoothServerService extends BluetoothService {
             Log.e(TAG, "BluetoothServerService launched with invalid number of players (or none)");
             return broadcastErrorAndStop();
         }
+
+        mGameStateController = GameStateController.get(this);
 
         if (mSocketReaderWriterMap.size() < mNumPlayers) {
             mAcceptThread = new AcceptThread();
@@ -73,9 +78,16 @@ public class BluetoothServerService extends BluetoothService {
      * Callback interface for SocketReader to inform the service of new data
      */
     @Override
-    public void onBtMessageReceived(AvalonMessage msg) {
+    public void onBtMessageReceived(BluetoothSocket socket, AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
         showToast("Received: " + msg);
+
+        // case through each message types
+        if (msg instanceof PlayerInfo) {
+            mPlayerSocketMap.put((PlayerInfo) msg, socket);
+        }
+
+        mGameStateController.processMessage(msg);
     }
 
     @Override
@@ -92,15 +104,20 @@ public class BluetoothServerService extends BluetoothService {
         }
 
         // remove from player infos
+        PlayerInfo oldInfo = null;
         for (PlayerInfo info : mPlayerSocketMap.keySet()) {
             if (mPlayerSocketMap.get(info) == socket) {
+                oldInfo = info;
                 mPlayerSocketMap.remove(info);
                 break;
             }
         }
 
-        // broadcast
-        broadcastConnectionStatus();
+        if (oldInfo != null) {
+            PlayerInfo info = new PlayerInfo(oldInfo.id, null);
+            info.oldName = oldInfo.name;
+            mGameStateController.processMessage(info);
+        }
     }
 
     // A BroadcastReceiver for our custom messages
