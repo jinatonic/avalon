@@ -24,6 +24,10 @@
         <service
             android:name=".avalon.network.BluetoothClientService"
             android:label="Client side bt service" />
+
+        <service
+            android:name=".avalon.network.BluetoothServerService"
+            android:label="Server side bt service" />
     </application>
 
 </manifest>

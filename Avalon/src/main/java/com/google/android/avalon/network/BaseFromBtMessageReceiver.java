@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import com.google.android.avalon.interfaces.ConnectionListener;
+import com.google.android.avalon.model.PlayerInfo;
 
 /**
  * Base broadcast receiver class that handles connection updates.
@@ -37,7 +38,10 @@ public class BaseFromBtMessageReceiver extends BroadcastReceiver {
         if (intent.hasExtra(ServiceMessageProtocol.CONNECTION_STATUS_KEY)) {
             boolean connected = intent.getBooleanExtra(
                     ServiceMessageProtocol.CONNECTION_STATUS_KEY, false);
-            mListener.onConnectionStatusChanged(connected);
+            PlayerInfo info = (intent.hasExtra(ServiceMessageProtocol.CONNECTION_PLAYER_KEY)) ?
+                    (PlayerInfo) intent.getSerializableExtra(
+                            ServiceMessageProtocol.CONNECTION_PLAYER_KEY) : null;
+            mListener.onConnectionStatusChanged(connected, info);
         }
     }
 }

@@ -41,7 +41,7 @@ public class SocketReader extends Thread {
                 bytes = is.read(buffer);
                 AvalonMessage msg = MessageParser.parse(buffer);
                 if (msg != null) {
-                    mHandler.onMessageReceived(msg);
+                    mHandler.onBtMessageReceived(msg);
                 }
             }
         } catch (IOException e) {

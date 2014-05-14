@@ -7,29 +7,31 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.R;
-import com.google.android.avalon.interfaces.GameStateController;
+import com.google.android.avalon.interfaces.RoleSelectorCallback;
+import com.google.android.avalon.model.PlayerInfo;
 
 public class RoleSelectionFragment extends Fragment {
-
-    private GameStateController mController;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.role_selection_fragment, parent, false);
 
-        mController = (GameStateController) getActivity();
+        final RoleSelectorCallback callback = (RoleSelectorCallback) getActivity();
 
         // This fragment literally just selects server or client role
         v.findViewById(R.id.server_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mController.onRoleSelected(true /* isServer */);
+                callback.onRoleSelected(true /* isServer */, null /* player info */);
             }
         });
         v.findViewById(R.id.client_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mController.onRoleSelected(false /* isServer */);
+                // TODO: get player info via dialog
+                PlayerInfo info = new PlayerInfo();
+                info.name = "Jin";
+                callback.onRoleSelected(false /* isServer */, info);
             }
         });
 

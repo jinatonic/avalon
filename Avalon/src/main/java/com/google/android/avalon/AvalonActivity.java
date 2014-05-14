@@ -13,17 +13,18 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.R;
-import com.google.android.avalon.fragments.ClientFragment;
 import com.google.android.avalon.fragments.RoleSelectionFragment;
 import com.google.android.avalon.fragments.SetupClientFragment;
 import com.google.android.avalon.fragments.SetupServerFragment;
-import com.google.android.avalon.interfaces.GameStateController;
-import com.google.android.avalon.model.RoleAssignment;
+import com.google.android.avalon.interfaces.RoleSelectorCallback;
+import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.network.BluetoothClientService;
+import com.google.android.avalon.network.BluetoothServerService;
 
 import java.util.UUID;
 
 
-public class AvalonActivity extends Activity implements GameStateController {
+public class AvalonActivity extends Activity implements RoleSelectorCallback {
     private static final int REQUEST_ENABLE_BT = 1;
 
     public static final UUID CLIENT_SERVER_UUID = new UUID(123456789, 987654321);
@@ -69,27 +70,23 @@ public class AvalonActivity extends Activity implements GameStateController {
     }
 
     @Override
-    public void onRoleSelected(boolean isServer) {
+    public void onRoleSelected(boolean isServer, PlayerInfo info) {
         Log.d(TAG, "on role selected: isServer? " + isServer);
         Fragment fragment;
+        // Set up the appropriate fragments and initialize the services
         if (isServer) {
             fragment = new SetupServerFragment();
+            Intent i = new Intent(this, BluetoothServerService.class);
+            i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 1);
+            startService(i);
         } else {
             fragment = new SetupClientFragment();
+            Intent i = new Intent(this, BluetoothClientService.class);
+            i.putExtra(BluetoothClientService.PLAYER_INFO_KEY, info);
+            startService(i);
         }
 
         // Instantiate and show the new fragment
-        getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
-    }
-
-    @Override
-    public void onSetupCompleted(RoleAssignment role) {
-        Log.d(TAG, "onSetupCompleted: " + role);
-        Fragment fragment = ClientFragment.newInstance(role);
-
-        // Show the new client fragment after the game starts
         getFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .commit();
@@ -99,17 +96,17 @@ public class AvalonActivity extends Activity implements GameStateController {
      * Helper function to show a dialog that tells the user bluetooth is required for this app
      * and then exit the app.
      */
-    protected void bluetoothNotSupported() {
+    private void bluetoothNotSupported() {
         FragmentManager fm = getFragmentManager();
         DialogFragment dialog = new ShowBtErrorFragment();
         dialog.show(fm, "error");
     }
 
-    private class ShowBtErrorFragment extends DialogFragment {
+    public static class ShowBtErrorFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity())
-                    .setTitle("Bluetooth required.")
+                    .setTitle("Bluetooth required")
                     .setNeutralButton("OK", new Dialog.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
