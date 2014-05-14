@@ -63,8 +63,7 @@ public abstract class BluetoothService extends Service implements AvalonMessageH
     protected void showToast(final String msg) {
         mHandler.post(new Runnable() {
             public void run() {
-                Toast toast = Toast.makeText(BluetoothService.this, msg, Toast.LENGTH_LONG);
-                toast.show();
+                Toast.makeText(BluetoothService.this, msg, Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -11,6 +11,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.google.android.R;
 import com.google.android.avalon.fragments.RoleSelectionFragment;
@@ -28,6 +31,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
     private static final int REQUEST_ENABLE_BT = 1;
 
     public static final UUID CLIENT_SERVER_UUID = new UUID(123456789, 987654321);
+
     public static final String TAG = AvalonActivity.class.getSimpleName();
 
     @Override
@@ -70,20 +74,21 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
     }
 
     @Override
-    public void onRoleSelected(boolean isServer, PlayerInfo info) {
+    public void onRoleSelected(boolean isServer) {
         Log.d(TAG, "on role selected: isServer? " + isServer);
         Fragment fragment;
         // Set up the appropriate fragments and initialize the services
         if (isServer) {
             fragment = new SetupServerFragment();
             Intent i = new Intent(this, BluetoothServerService.class);
+            // TODO: add input for this
             i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 1);
             startService(i);
         } else {
             fragment = new SetupClientFragment();
-            Intent i = new Intent(this, BluetoothClientService.class);
-            i.putExtra(BluetoothClientService.PLAYER_INFO_KEY, info);
-            startService(i);
+
+            DialogFragment dialog = new NameInputDialog();
+            dialog.show(getFragmentManager(), "name_input_dialog");
         }
 
         // Instantiate and show the new fragment
@@ -99,7 +104,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
     private void bluetoothNotSupported() {
         FragmentManager fm = getFragmentManager();
         DialogFragment dialog = new ShowBtErrorFragment();
-        dialog.show(fm, "error");
+        dialog.show(fm, "error_dialog");
     }
 
     public static class ShowBtErrorFragment extends DialogFragment {
@@ -115,6 +120,47 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
                     })
                     .setCancelable(false)
                     .create();
+        }
+    }
+
+    public static class NameInputDialog extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final EditText v = new EditText(getActivity());
+            final AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                    .setView(v)
+                    .setTitle("Please input your name")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setCancelable(false)
+                    .create();
+
+            // We attach button listener this way so it won't get dismissed until the user
+            // inputs the appropriate name
+            dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialogInterface) {
+                    Button b = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                    b.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String name = v.getText().toString();
+                            if (name != null && !name.isEmpty()) {
+                                Intent intent = new Intent(getActivity(),
+                                        BluetoothClientService.class);
+                                PlayerInfo info = new PlayerInfo(UUID.randomUUID(),
+                                        v.getText().toString());
+                                intent.putExtra(BluetoothClientService.PLAYER_INFO_KEY, info);
+                                getActivity().startService(intent);
+
+                                //Dismiss once everything is OK.
+                                dialog.dismiss();
+                            }
+                        }
+                    });
+                }
+            });
+
+            return dialog;
         }
     }
 }

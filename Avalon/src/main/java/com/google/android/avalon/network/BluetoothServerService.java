@@ -49,6 +49,7 @@ public class BluetoothServerService extends BluetoothService {
         Intent discoverableIntent = new
                 Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+        discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(discoverableIntent);
 
         if (mSocketReaderMap.size() < mNumPlayers) {
@@ -109,7 +110,9 @@ public class BluetoothServerService extends BluetoothService {
                 Log.i(TAG, "Waiting for connection...");
                 try {
                     socket = mmServerSocket.accept();
+                    Log.i(TAG, "Accept returned");
                 } catch (IOException e) {
+                    e.printStackTrace();
                     break;
                 }
                 // If a connection was accepted

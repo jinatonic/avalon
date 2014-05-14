@@ -24,15 +24,13 @@ public class RoleSelectionFragment extends Fragment {
         v.findViewById(R.id.server_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                callback.onRoleSelected(true /* isServer */, null /* player info */);
+                callback.onRoleSelected(true /* isServer */);
             }
         });
         v.findViewById(R.id.client_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: get player info via dialog
-                PlayerInfo info = new PlayerInfo(UUID.randomUUID(), "Jin");
-                callback.onRoleSelected(false /* isServer */, info);
+                callback.onRoleSelected(false /* isServer */);
             }
         });
 
