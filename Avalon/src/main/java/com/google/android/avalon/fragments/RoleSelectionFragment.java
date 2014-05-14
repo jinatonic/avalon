@@ -10,6 +10,8 @@ import com.google.android.R;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
 import com.google.android.avalon.model.PlayerInfo;
 
+import java.util.UUID;
+
 public class RoleSelectionFragment extends Fragment {
 
     @Override
@@ -29,8 +31,7 @@ public class RoleSelectionFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 // TODO: get player info via dialog
-                PlayerInfo info = new PlayerInfo();
-                info.name = "Jin";
+                PlayerInfo info = new PlayerInfo(UUID.randomUUID(), "Jin");
                 callback.onRoleSelected(false /* isServer */, info);
             }
         });

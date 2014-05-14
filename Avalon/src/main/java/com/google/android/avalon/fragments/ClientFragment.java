@@ -12,8 +12,8 @@ import android.widget.TextView;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
-import com.google.android.avalon.interfaces.ConnectionListener;
 import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.PlayerInfo;
 import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.network.BaseFromBtMessageReceiver;
 import com.google.android.avalon.network.ServiceMessageProtocol;
@@ -21,7 +21,7 @@ import com.google.android.avalon.network.ServiceMessageProtocol;
 /**
  * Created by jinyan on 5/12/14.
  */
-public class ClientFragment extends Fragment implements ConnectionListener {
+public class ClientFragment extends Fragment {
 
     public static final String EXTRA_ROLE_ASSIGNMENT = "extra_role_assignment";
 
@@ -52,9 +52,6 @@ public class ClientFragment extends Fragment implements ConnectionListener {
         mSeenPlayersText = (TextView) v.findViewById(R.id.seen_players_text);
 
         setRoleAssignment((RoleAssignment) getArguments().getSerializable(EXTRA_ROLE_ASSIGNMENT));
-
-        mReceiver = new MessageReceiver();
-        mReceiver.attach(getActivity());
 
         return v;
     }
@@ -92,8 +89,8 @@ public class ClientFragment extends Fragment implements ConnectionListener {
         } else {
             StringBuilder seenPlayers = new StringBuilder();
             int i = 0;
-            for (String player: mRoleAssignment.seenPlayers) {
-                seenPlayers.append(player);
+            for (PlayerInfo player: mRoleAssignment.seenPlayers) {
+                seenPlayers.append(player.name);
                 if (i++ < mRoleAssignment.seenPlayers.size() - 1) {
                     seenPlayers.append(", ");
                 }
@@ -102,25 +99,20 @@ public class ClientFragment extends Fragment implements ConnectionListener {
         }
     }
 
-    @Override
-    public void onConnectionStatusChanged(boolean connected) {
-        // TODO: probably should have a connection status text somewhere in this fragment
-    }
-
-    private class MessageReceiver extends BaseFromBtMessageReceiver {
-
-        public MessageReceiver() {
-            super(ClientFragment.this);
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
-                AvalonMessage msg = (AvalonMessage) intent.getSerializableExtra(
-                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
-                handleMessage(msg);
-            }
-            super.onReceive(context, intent);
-        }
-    }
+//    private class MessageReceiver extends BaseFromBtMessageReceiver {
+//
+//        public MessageReceiver() {
+//            super(ClientFragment.this);
+//        }
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
+//                AvalonMessage msg = (AvalonMessage) intent.getSerializableExtra(
+//                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+//                handleMessage(msg);
+//            }
+//            super.onReceive(context, intent);
+//        }
+//    }
 }

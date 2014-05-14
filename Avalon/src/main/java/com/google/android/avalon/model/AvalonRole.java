@@ -3,4 +3,19 @@ package com.google.android.avalon.model;
 /**
 * Created by mikewallstedt on 5/12/14.
 */
-public enum AvalonRole { LOYAL, EVIL, MERLIN, PERCIVAL, ASSASSIN, MORDRED, MORGANA, OBERON }
+public enum AvalonRole {
+    LOYAL(true),
+    MINION(false),
+    MERLIN(true),
+    PERCIVAL(true),
+    ASSASSIN(false),
+    MORDRED(false),
+    MORGANA(false),
+    OBERON(false);
+
+    public final boolean isGood;
+
+    AvalonRole(boolean isGood) {
+        this.isGood = isGood;
+    }
+}
