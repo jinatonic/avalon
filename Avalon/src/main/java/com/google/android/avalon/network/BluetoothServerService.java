@@ -10,8 +10,9 @@ import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.PlayerDisconnected;
 import com.google.android.avalon.model.PlayerInfo;
-import com.google.android.avalon.rules.GameStateController;
+import com.google.android.avalon.controllers.ServerGameStateController;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class BluetoothServerService extends BluetoothService {
 
     public static final String NUM_PLAYERS_KEY = "num_players_key";
 
-    private GameStateController mGameStateController;
+    private ServerGameStateController mServerGameStateController;
 
     private int mNumPlayers;
     private Map<PlayerInfo, BluetoothSocket> mPlayerSocketMap =
@@ -39,6 +40,9 @@ public class BluetoothServerService extends BluetoothService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BluetoothServerService starting");
+        mServerGameStateController = ServerGameStateController.get(this);
+        mMessageListener = mServerGameStateController;
+
         int result = super.onStartCommand(intent, flags, startId);
 
         mNumPlayers = intent.getIntExtra(NUM_PLAYERS_KEY, 0);
@@ -47,7 +51,6 @@ public class BluetoothServerService extends BluetoothService {
             return broadcastErrorAndStop();
         }
 
-        mGameStateController = GameStateController.get(this);
 
         if (mSocketReaderWriterMap.size() < mNumPlayers) {
             mAcceptThread = new AcceptThread();
@@ -69,11 +72,6 @@ public class BluetoothServerService extends BluetoothService {
         return new ServiceMessageReceiver();
     }
 
-    @Override
-    protected Set<PlayerInfo> getConnected() {
-        return mPlayerSocketMap.keySet();
-    }
-
     /**
      * Callback interface for SocketReader to inform the service of new data
      */
@@ -87,7 +85,7 @@ public class BluetoothServerService extends BluetoothService {
             mPlayerSocketMap.put((PlayerInfo) msg, socket);
         }
 
-        mGameStateController.processMessage(msg);
+        notifyControllerAndUi(msg);
     }
 
     @Override
@@ -114,9 +112,8 @@ public class BluetoothServerService extends BluetoothService {
         }
 
         if (oldInfo != null) {
-            PlayerInfo info = new PlayerInfo(oldInfo.id, null);
-            info.oldName = oldInfo.name;
-            mGameStateController.processMessage(info);
+            PlayerDisconnected disconnected = new PlayerDisconnected(oldInfo);
+            notifyControllerAndUi(disconnected);
         }
     }
 
@@ -165,9 +162,6 @@ public class BluetoothServerService extends BluetoothService {
 
                     mSocketReaderWriterMap.put(socket,
                             new SocketReaderWriterWrapper(reader, writer));
-
-                    // broadcast so listeners will see this update
-                    broadcastConnectionStatus();
 
                     // check if we need to listen for more connections
                     if (mSocketReaderWriterMap.size() >= mNumPlayers) {

@@ -10,10 +10,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.avalon.interfaces.AvalonMessageListener;
 import com.google.android.avalon.interfaces.BluetoothController;
-import com.google.android.avalon.model.PlayerInfo;
-
-import java.util.Set;
+import com.google.android.avalon.model.AvalonMessage;
 
 /**
  * Created by jinyan on 5/13/14.
@@ -23,6 +22,7 @@ public abstract class BluetoothService extends Service implements BluetoothContr
     private static final String TAG = BluetoothService.class.getSimpleName();
 
     protected BroadcastReceiver mMsgReceiver;
+    protected AvalonMessageListener mMessageListener;
 
     private Handler mHandler;
 
@@ -39,9 +39,6 @@ public abstract class BluetoothService extends Service implements BluetoothContr
 
         mHandler = new Handler();
 
-        // Notify that we currently do not have the connection
-        broadcastConnectionStatus();
-
         // This code will restart the service with the same intent if it's ever destroyed by OS
         return START_REDELIVER_INTENT;
     }
@@ -52,12 +49,25 @@ public abstract class BluetoothService extends Service implements BluetoothContr
         unregisterReceiver(mMsgReceiver);
 
         // Notify that we are losing all of our connections
-        broadcastConnectionStatus();
+        broadcastUpdate();
     }
 
     protected abstract BroadcastReceiver getServiceMessageReceiver();
 
-    protected abstract Set<PlayerInfo> getConnected();
+    /**
+     * Helper function to both notify the controller of the new message and notify the UI that
+     * something has changed.
+     */
+    protected void notifyControllerAndUi(AvalonMessage msg) {
+        mMessageListener.onAvalonMessageReceived(msg);
+        broadcastUpdate();
+    }
+
+    protected void broadcastUpdate() {
+        Bundle extra = new Bundle();
+        extra.putBoolean(ServiceMessageProtocol.DATA_CHANGED, true);
+        ServiceMessageProtocol.broadcastFromBt(this, extra);
+    }
 
     /**
      * Helper function to debug
@@ -68,15 +78,6 @@ public abstract class BluetoothService extends Service implements BluetoothContr
                 Toast.makeText(BluetoothService.this, msg, Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    /**
-     * Helper function to broadcast connection status to the activity
-     */
-    protected void broadcastConnectionStatus() {
-        Set<PlayerInfo> player = getConnected();
-        Log.i(TAG, "broadcastConnectionStatus: " + (player != null && player.size() > 0));
-        showToast("Connection status: " + (player != null && player.size() > 0));
     }
 
     /**

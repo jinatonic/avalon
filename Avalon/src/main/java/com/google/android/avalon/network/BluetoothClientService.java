@@ -12,7 +12,9 @@ import android.os.HandlerThread;
 import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
+import com.google.android.avalon.controllers.ClientGameStateController;
 import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.ConnectionLost;
 import com.google.android.avalon.model.PlayerInfo;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ public class BluetoothClientService extends BluetoothService {
     // than one connect call running at once.
     private Handler mHandler;
 
+    private ClientGameStateController mClientGameStateController;
+
     private BluetoothAdapter mBluetoothAdapter;
     private HashSet<String> mSeenAddresses;
 
@@ -48,6 +52,9 @@ public class BluetoothClientService extends BluetoothService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BluetoothClientService starting");
+        mClientGameStateController = ClientGameStateController.get(this);
+        mMessageListener = mClientGameStateController;
+
         int result = super.onStartCommand(intent, flags, startId);
 
         // Check for required fields for launching this service
@@ -62,7 +69,10 @@ public class BluetoothClientService extends BluetoothService {
         mSeenAddresses = new HashSet<String>();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        if (getConnected() == null) {
+        // Notify UI and controller of acquired player information
+        notifyControllerAndUi(mPlayerInfo);
+
+        if (mServerSocket == null || !mServerSocket.isConnected()) {
             Log.d(TAG, "Starting discovery process");
             resetHandler();
 
@@ -98,14 +108,6 @@ public class BluetoothClientService extends BluetoothService {
         return new ServiceMessageReceiver();
     }
 
-    @Override
-    protected Set<PlayerInfo> getConnected() {
-        if (mServerSocket != null && mServerSocket.isConnected()) {
-            return mPlayerInfoSet;
-        }
-        return null;
-    }
-
     /**
      * Callback interface for SocketReader to inform the service of new data
      */
@@ -121,7 +123,7 @@ public class BluetoothClientService extends BluetoothService {
             mServerSocket.close();
         } catch (IOException e) { }
         mServerSocket = null;
-        broadcastConnectionStatus();
+        notifyControllerAndUi(new ConnectionLost());
     }
 
     /**
@@ -214,9 +216,6 @@ public class BluetoothClientService extends BluetoothService {
 
                 // Send out client information
                 mWriter.send(mPlayerInfo);
-
-                // Send broadcast that connection has been established
-                broadcastConnectionStatus();
             } finally {
                 if (mServerSocket == null) {
                     mSeenAddresses.add(mDevice.getAddress());

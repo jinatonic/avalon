@@ -13,6 +13,7 @@ public class ServiceMessageProtocol {
     public static final String FROM_BT_SERVICE_INTENT = "from_bt_service_intent";
 
     public static final String SERVICE_ERROR = "service_error_must_quit";
+    public static final String DATA_CHANGED = "data_changed";
 
     public static void broadcastToBt(Context context, Bundle extra) {
         Intent i = new Intent(TO_BT_SERVICE_INTENT);
