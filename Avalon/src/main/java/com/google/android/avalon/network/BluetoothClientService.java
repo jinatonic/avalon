@@ -18,6 +18,7 @@ import com.google.android.avalon.model.PlayerInfo;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by jinyan on 5/13/14.
@@ -34,12 +35,14 @@ public class BluetoothClientService extends BluetoothService {
 
     private BluetoothAdapter mBluetoothAdapter;
     private HashSet<String> mSeenAddresses;
-    private BluetoothSocket mServerSocket;
 
     // custom broadcast receiver to detect bluetooth scan
     private BtScanReceiver mBtScanReceiver;
 
-    private PlayerInfo mPlayerInfo;
+    private BluetoothSocket mServerSocket;
+    private SocketReader mReader;
+    private SocketWriter mWriter;
+    private Set<PlayerInfo> mPlayerInfo;    // will ever only contain a single item
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -52,19 +55,23 @@ public class BluetoothClientService extends BluetoothService {
             Log.e(TAG, "BluetoothClientService launched without PlayerInfo");
             return broadcastErrorAndStop();
         }
-        mPlayerInfo = (PlayerInfo) player;
+        mPlayerInfo = new HashSet<PlayerInfo>();
+        mPlayerInfo.add((PlayerInfo) player);
         mSeenAddresses = new HashSet<String>();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        resetHandler();
+        if (getConnected() == null) {
+            Log.d(TAG, "Starting discovery process");
+            resetHandler();
 
-        // Register the BroadcastReceiver
-        mBtScanReceiver = new BtScanReceiver();
-        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mBtScanReceiver, intentFilter);
+            // Register the BroadcastReceiver
+            mBtScanReceiver = new BtScanReceiver();
+            IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mBtScanReceiver, intentFilter);
 
-        // Start discovery
-        mBluetoothAdapter.startDiscovery();
+            // Start discovery
+            mBluetoothAdapter.startDiscovery();
+        }
 
         return result;
     }
@@ -89,6 +96,14 @@ public class BluetoothClientService extends BluetoothService {
         return new ServiceMessageReceiver();
     }
 
+    @Override
+    protected Set<PlayerInfo> getConnected() {
+        if (mServerSocket != null && mServerSocket.isConnected()) {
+            return mPlayerInfo;
+        }
+        return null;
+    }
+
     /**
      * Callback interface for SocketReader to inform the service of new data
      */
@@ -98,6 +113,18 @@ public class BluetoothClientService extends BluetoothService {
         showToast("Received: " + msg);
     }
 
+    @Override
+    public void onSocketClosed(BluetoothSocket socket) {
+        try {
+            mServerSocket.close();
+        } catch (IOException e) { }
+        mServerSocket = null;
+        broadcastConnectionStatus();
+    }
+
+    /**
+     * Helper method to destroy and terminate the old handler and start a new one.
+     */
     private void resetHandler() {
         if (mHandler != null) {
             mHandler.getLooper().quit();
@@ -181,10 +208,10 @@ public class BluetoothClientService extends BluetoothService {
                 mReader.start();
 
                 // writer manages a handler, so don't need to start it
-                mWriter = new SocketWriter(mServerSocket);
+                mWriter = new SocketWriter(mServerSocket, BluetoothClientService.this);
 
                 // Send broadcast that connection has been established
-                broadcastConnectionStatus(true, mPlayerInfo);
+                broadcastConnectionStatus();
             } finally {
                 if (mServerSocket == null) {
                     mSeenAddresses.add(mDevice.getAddress());

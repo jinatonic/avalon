@@ -3,6 +3,8 @@ package com.google.android.avalon.network;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import com.google.android.avalon.fragments.ClientFragment;
+import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.MessageParser;
 import com.google.android.avalon.interfaces.AvalonMessageHandler;
@@ -17,11 +19,11 @@ public class SocketReader extends Thread {
     private static final String TAG = SocketReader.class.getSimpleName();
 
     private final BluetoothSocket mSocket;
-    private final AvalonMessageHandler mHandler;
+    private final BluetoothController mController;
 
-    public SocketReader(BluetoothSocket socket, AvalonMessageHandler handler) {
+    public SocketReader(BluetoothSocket socket, BluetoothController controller) {
         mSocket = socket;
-        mHandler = handler;
+        mController = controller;
     }
 
     /**
@@ -41,13 +43,14 @@ public class SocketReader extends Thread {
                 bytes = is.read(buffer);
                 AvalonMessage msg = MessageParser.parse(buffer);
                 if (msg != null) {
-                    mHandler.onBtMessageReceived(msg);
+                    mController.onBtMessageReceived(msg);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             Log.d(TAG, "SocketReader is terminating");
+            mController.onSocketClosed(mSocket);
             if (is != null) {
                 try {
                     is.close();

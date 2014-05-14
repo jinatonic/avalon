@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.HandlerThread;
 
+import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.MessageParser;
 
@@ -16,28 +17,40 @@ import java.io.OutputStream;
 public class SocketWriter {
     private static final String TAG = SocketWriter.class.getSimpleName();
 
-    private static final Handler sHandler;
-    static {
-        HandlerThread thread = new HandlerThread("SocketWriter Thread");
-        thread.start();
-        sHandler = new Handler(thread.getLooper());
-    }
-
     private final BluetoothSocket mSocket;
-    private OutputStream mOs;
+    private final BluetoothController mController;
 
-    public SocketWriter(BluetoothSocket socket) {
+    private OutputStream mOs;
+    private Handler mHandler;
+
+    public SocketWriter(BluetoothSocket socket, BluetoothController controller) {
         mSocket = socket;
+        mController = controller;
         try {
             mOs = socket.getOutputStream();
+
+            HandlerThread thread = new HandlerThread("SocketWriter Thread");
+            thread.start();
+            mHandler = new Handler(thread.getLooper());
         } catch (IOException e) {
             e.printStackTrace();
-            mOs = null;
+            mController.onSocketClosed(mSocket);
+        }
+    }
+
+    public void terminate() {
+        if (mOs != null) {
+            try {
+                mOs.close();
+            } catch (IOException e) { }
+        }
+        if (mHandler != null) {
+            mHandler.getLooper().quit();
         }
     }
 
     public void send(final AvalonMessage msg) {
-        sHandler.post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 if (mSocket.isConnected() && mOs != null) {

@@ -8,9 +8,6 @@ import android.view.ViewGroup;
 
 import com.google.android.R;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
-import com.google.android.avalon.model.PlayerInfo;
-
-import java.util.UUID;
 
 public class RoleSelectionFragment extends Fragment {
 

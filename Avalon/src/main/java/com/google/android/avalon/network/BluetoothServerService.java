@@ -15,6 +15,7 @@ import com.google.android.avalon.model.PlayerInfo;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by jinyan on 5/13/14.
@@ -27,10 +28,8 @@ public class BluetoothServerService extends BluetoothService {
     private int mNumPlayers;
     private Map<PlayerInfo, BluetoothSocket> mPlayerSocketMap =
             new HashMap<PlayerInfo, BluetoothSocket>();
-    private Map<BluetoothSocket, SocketReader> mSocketReaderMap =
-            new HashMap<BluetoothSocket, SocketReader>();
-    private Map<BluetoothSocket, SocketWriter> mSocketWriterMap =
-            new HashMap<BluetoothSocket, SocketWriter>();
+    private Map<BluetoothSocket, SocketReaderWriterWrapper> mSocketReaderWriterMap =
+            new HashMap<BluetoothSocket, SocketReaderWriterWrapper>();
 
     private AcceptThread mAcceptThread;
 
@@ -45,7 +44,7 @@ public class BluetoothServerService extends BluetoothService {
             return broadcastErrorAndStop();
         }
 
-        if (mSocketReaderMap.size() < mNumPlayers) {
+        if (mSocketReaderWriterMap.size() < mNumPlayers) {
             mAcceptThread = new AcceptThread();
             mAcceptThread.start();
         }
@@ -65,6 +64,11 @@ public class BluetoothServerService extends BluetoothService {
         return new ServiceMessageReceiver();
     }
 
+    @Override
+    protected Set<PlayerInfo> getConnected() {
+        return mPlayerSocketMap.keySet();
+    }
+
     /**
      * Callback interface for SocketReader to inform the service of new data
      */
@@ -72,6 +76,31 @@ public class BluetoothServerService extends BluetoothService {
     public void onBtMessageReceived(AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
         showToast("Received: " + msg);
+    }
+
+    @Override
+    public void onSocketClosed(BluetoothSocket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) { }
+
+        // remove from socket reader writer map
+        if (mSocketReaderWriterMap.containsKey(socket)) {
+            mSocketReaderWriterMap.get(socket).reader.interrupt();
+            mSocketReaderWriterMap.get(socket).writer.terminate();
+            mSocketReaderWriterMap.remove(socket);
+        }
+
+        // remove from player infos
+        for (PlayerInfo info : mPlayerSocketMap.keySet()) {
+            if (mPlayerSocketMap.get(info) == socket) {
+                mPlayerSocketMap.remove(info);
+                break;
+            }
+        }
+
+        // broadcast
+        broadcastConnectionStatus();
     }
 
     // A BroadcastReceiver for our custom messages
@@ -110,20 +139,21 @@ public class BluetoothServerService extends BluetoothService {
                 }
                 // If a connection was accepted
                 if (socket != null) {
-
                     // Start the reader thread
-                    mReader = new SocketReader(socket, BluetoothServerService.this);
-                    mReader.start();
+                    SocketReader reader = new SocketReader(socket, BluetoothServerService.this);
+                    reader.start();
 
                     // writer manages a handler, so don't need to start it
-                    mWriter = new SocketWriter(socket);
+                    SocketWriter writer = new SocketWriter(socket, BluetoothServerService.this);
 
-                    mSocketReaderMap.put(socket, mReader);
-                    mSocketWriterMap.put(socket, mWriter);
+                    mSocketReaderWriterMap.put(socket,
+                            new SocketReaderWriterWrapper(reader, writer));
 
-                    showToast("Connection established, number of connections: " +
-                            mSocketReaderMap.size());
-                    if (mSocketReaderMap.size() >= mNumPlayers) {
+                    // broadcast so listeners will see this update
+                    broadcastConnectionStatus();
+
+                    // check if we need to listen for more connections
+                    if (mSocketReaderWriterMap.size() >= mNumPlayers) {
                         // We are done, close the server socket and break out of the accept loop
                         // TODO: what to do where there are more players?
                         try {
@@ -142,6 +172,16 @@ public class BluetoothServerService extends BluetoothService {
             try {
                 mmServerSocket.close();
             } catch (IOException e) { }
+        }
+    }
+
+    private static class SocketReaderWriterWrapper {
+        SocketReader reader;
+        SocketWriter writer;
+
+        SocketReaderWriterWrapper(SocketReader r, SocketWriter w) {
+            reader = r;
+            writer = w;
         }
     }
 }

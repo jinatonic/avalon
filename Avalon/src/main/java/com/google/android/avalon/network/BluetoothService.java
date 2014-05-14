@@ -10,18 +10,18 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.avalon.interfaces.AvalonMessageHandler;
+import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.PlayerInfo;
+
+import java.util.Set;
 
 /**
  * Created by jinyan on 5/13/14.
  */
-public abstract class BluetoothService extends Service implements AvalonMessageHandler {
+public abstract class BluetoothService extends Service implements BluetoothController {
 
     private static final String TAG = BluetoothService.class.getSimpleName();
 
-    protected SocketReader mReader;
-    protected SocketWriter mWriter;
     protected BroadcastReceiver mMsgReceiver;
 
     private Handler mHandler;
@@ -40,7 +40,7 @@ public abstract class BluetoothService extends Service implements AvalonMessageH
         mHandler = new Handler();
 
         // Notify that we currently do not have the connection
-        broadcastConnectionStatus(false, null);
+        broadcastConnectionStatus();
 
         // This code will restart the service with the same intent if it's ever destroyed by OS
         return START_REDELIVER_INTENT;
@@ -51,11 +51,13 @@ public abstract class BluetoothService extends Service implements AvalonMessageH
         super.onDestroy();
         unregisterReceiver(mMsgReceiver);
 
-        // Notify that we currently do not have the connection
-        broadcastConnectionStatus(false, null);
+        // Notify that we are losing all of our connections
+        broadcastConnectionStatus();
     }
 
     protected abstract BroadcastReceiver getServiceMessageReceiver();
+
+    protected abstract Set<PlayerInfo> getConnected();
 
     /**
      * Helper function to debug
@@ -71,9 +73,10 @@ public abstract class BluetoothService extends Service implements AvalonMessageH
     /**
      * Helper function to broadcast connection status to the activity
      */
-    protected void broadcastConnectionStatus(boolean connected, PlayerInfo player) {
-        Log.i(TAG, "broadcastConnectionStatus: " + connected);
-        showToast("Connection status: " + connected + ", " + player);
+    protected void broadcastConnectionStatus() {
+        Set<PlayerInfo> player = getConnected();
+        Log.i(TAG, "broadcastConnectionStatus: " + (player != null && player.size() > 0));
+        showToast("Connection status: " + (player != null && player.size() > 0));
     }
 
     /**
