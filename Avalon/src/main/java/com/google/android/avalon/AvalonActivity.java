@@ -77,6 +77,8 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
             mGameProgression = ROLE_SELECTION;
         }
 
+        // We always instantiate everything just for simplicity. Memory overhead should be minimal
+        // since for the fragments we don't actually inflate any of the views unnecessarily.
         mRoleSelectionFragment = new RoleSelectionFragment();
         mSetupServerFragment = new SetupServerFragment();
         mSetupClientFragment = new SetupClientFragment();

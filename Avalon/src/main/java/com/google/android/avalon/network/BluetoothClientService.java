@@ -126,6 +126,10 @@ public class BluetoothClientService extends BluetoothService {
         notifyControllerAndUi(new ConnectionLost());
     }
 
+    protected void notifyControllerAndUi(AvalonMessage msg) {
+        super.notifyControllerAndUi(mPlayerInfo, msg);
+    }
+
     /**
      * Helper method to destroy and terminate the old handler and start a new one.
      */

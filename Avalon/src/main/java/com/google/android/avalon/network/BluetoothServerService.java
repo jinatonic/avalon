@@ -85,7 +85,19 @@ public class BluetoothServerService extends BluetoothService {
             mPlayerSocketMap.put((PlayerInfo) msg, socket);
         }
 
-        notifyControllerAndUi(msg);
+        // find the appropriate player that's associated with the socket
+        PlayerInfo info = null;
+        for (PlayerInfo i : mPlayerSocketMap.keySet()) {
+            if (mPlayerSocketMap.get(i) == socket) {
+                info = i;
+                break;
+            }
+        }
+        if (info != null) {
+            notifyControllerAndUi(info, msg);
+        } else {
+            Log.w(TAG, "onBtMessageReceived with missing player info!");
+        }
     }
 
     @Override
@@ -113,14 +125,27 @@ public class BluetoothServerService extends BluetoothService {
 
         if (oldInfo != null) {
             PlayerDisconnected disconnected = new PlayerDisconnected(oldInfo);
-            notifyControllerAndUi(disconnected);
+            notifyControllerAndUi(oldInfo, disconnected);
         }
     }
 
-    // A BroadcastReceiver for our custom messages
+    // A BroadcastReceiver for our custom messages between app and service
     private class ServiceMessageReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            // TODO: handle
+            if (intent.hasExtra(ServiceMessageProtocol.PLAYER_INFO_KEY)) {
+                PlayerInfo info = (PlayerInfo) intent.getSerializableExtra(
+                        ServiceMessageProtocol.PLAYER_INFO_KEY);
+                AvalonMessage message = (AvalonMessage) intent.getSerializableExtra(
+                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+                // Find the appropriate socket and write to it
+                BluetoothSocket socket = mPlayerSocketMap.get(info);
+                if (socket != null) {
+                    SocketReaderWriterWrapper wrapper = mSocketReaderWriterMap.get(socket);
+                    if (wrapper != null) {
+                        wrapper.writer.send(message);
+                    }
+                }
+            }
         }
     }
 

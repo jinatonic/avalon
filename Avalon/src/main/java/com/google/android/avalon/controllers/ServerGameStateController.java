@@ -2,7 +2,6 @@ package com.google.android.avalon.controllers;
 
 import android.content.Context;
 
-import com.google.android.avalon.interfaces.AvalonMessageListener;
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
@@ -20,16 +19,13 @@ import java.util.Set;
  * Used by BluetoothServerService mainly to keep track of game state.
  * UI classes can query the controller for the current game state.
  */
-public class ServerGameStateController implements AvalonMessageListener {
-
-    private Context mContext;
+public class ServerGameStateController extends GameStateController {
 
     // Initial configurations
     private GameConfiguration mConfig;
     private Set<PlayerInfo> mPlayers;
 
     // State variables that cannot change once the game starts
-    private boolean mStarted;
     private InitialAssignments mAssignments;
     private Map<PlayerInfo, Boolean> mPlayerInfoConnected;
 
@@ -59,17 +55,13 @@ public class ServerGameStateController implements AvalonMessageListener {
         return mAssignments;
     }
 
-    public boolean started() {
-        return mStarted;
-    }
-
     // TODO
     public ServerGameState getCurrentGameState() {
         return new ServerGameState();
     }
 
     @Override
-    public void onAvalonMessageReceived(AvalonMessage msg) {
+    public void onAvalonMessageReceived(PlayerInfo info, AvalonMessage msg) {
 
     }
 }

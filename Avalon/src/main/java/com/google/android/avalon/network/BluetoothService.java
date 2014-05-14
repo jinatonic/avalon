@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.google.android.avalon.interfaces.AvalonMessageListener;
 import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.PlayerInfo;
 
 /**
  * Created by jinyan on 5/13/14.
@@ -58,8 +59,8 @@ public abstract class BluetoothService extends Service implements BluetoothContr
      * Helper function to both notify the controller of the new message and notify the UI that
      * something has changed.
      */
-    protected void notifyControllerAndUi(AvalonMessage msg) {
-        mMessageListener.onAvalonMessageReceived(msg);
+    protected void notifyControllerAndUi(PlayerInfo src, AvalonMessage msg) {
+        mMessageListener.onAvalonMessageReceived(src, msg);
         broadcastUpdate();
     }
 
