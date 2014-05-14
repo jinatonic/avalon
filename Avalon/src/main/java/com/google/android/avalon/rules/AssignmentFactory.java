@@ -1,4 +1,4 @@
-package com.google.android.avalon;
+package com.google.android.avalon.rules;
 
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
@@ -26,8 +26,14 @@ public class AssignmentFactory {
     }
 
     // VisibleForTesting
-    List<AvalonRole> getRolesInPlay() {
-        int numEvil = mGameConfiguration.numPlayers / 3;
+    public List<AvalonRole> getRolesInPlay() {
+        if (mGameConfiguration.numPlayers < 5) {
+            throw new IllegalStateException(
+                    String.format("Too few players. 5 required, only %d provided.",
+                            mGameConfiguration.numPlayers));
+        }
+        int numEvil = mGameConfiguration.numPlayers % 3 == 0 ?
+                mGameConfiguration.numPlayers / 3 : mGameConfiguration.numPlayers / 3 + 1;
         Collection<AvalonRole> specialEvil = getSpecialEvil();
         if (specialEvil.size() > numEvil) {
             String message = String.format(
@@ -40,7 +46,7 @@ public class AssignmentFactory {
         List<AvalonRole> rolesInPlay = new ArrayList<AvalonRole>();
         rolesInPlay.addAll(specialEvil);
         for (int i = rolesInPlay.size(); i < numEvil; i++) {
-            rolesInPlay.add(AvalonRole.EVIL);
+            rolesInPlay.add(AvalonRole.MINION);
         }
         rolesInPlay.addAll(getSpecialGood());
         for (int i = rolesInPlay.size(); i < mGameConfiguration.numPlayers; i++) {
@@ -51,6 +57,9 @@ public class AssignmentFactory {
 
     private Collection<AvalonRole> getSpecialEvil() {
         Set<AvalonRole> result = new HashSet<AvalonRole>();
+        if (mGameConfiguration.includeAssassin) {
+            result.add(AvalonRole.ASSASSIN);
+        }
         if (mGameConfiguration.includeMordred) {
             result.add(AvalonRole.MORDRED);
         }
