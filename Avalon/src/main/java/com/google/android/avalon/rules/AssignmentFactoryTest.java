@@ -2,13 +2,15 @@ package com.google.android.avalon.rules;
 
 import android.test.InstrumentationTestCase;
 
-import com.google.android.avalon.rules.AssignmentFactory;
+import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
 import com.google.android.avalon.model.PlayerName;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,17 +28,6 @@ import static com.google.android.avalon.model.AvalonRole.MORDRED;
  */
 public class AssignmentFactoryTest extends InstrumentationTestCase {
 
-    public void setup() {
-        PlayerName alice = new PlayerName(UUID.randomUUID(), "Alice");
-        PlayerName bob = new PlayerName(UUID.randomUUID(), "Bob");
-        PlayerName carl = new PlayerName(UUID.randomUUID(), "Carl");
-        PlayerName don = new PlayerName(UUID.randomUUID(), "Don");
-        PlayerName eve = new PlayerName(UUID.randomUUID(), "Eve");
-        PlayerName fred = new PlayerName(UUID.randomUUID(), "Fred");
-        PlayerName greg = new PlayerName(UUID.randomUUID(), "Greg");
-        PlayerName han = new PlayerName(UUID.randomUUID(), "han");
-    }
-
     public void testGetRolesInPlayShouldFillNormalRoles() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 8;
@@ -48,7 +39,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         List<AvalonRole> expected = Arrays.asList(
                 MORDRED, ASSASSIN, MINION,
                 MERLIN, LOYAL, LOYAL, LOYAL, LOYAL);
-        assertRoleListsEqual(expected, new AssignmentFactory(config).getRolesInPlay());
+        assertListsHaveSame(expected, new AssignmentFactory(config).getRolesInPlay());
     }
 
     public void testGetRolesInPlayWithAllSpecialsIncluded() {
@@ -64,7 +55,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         List<AvalonRole> expected = Arrays.asList(
                 MORDRED, MORGANA, OBERON, ASSASSIN,
                 PERCIVAL, MERLIN, LOYAL, LOYAL, LOYAL, LOYAL);
-        assertRoleListsEqual(expected, new AssignmentFactory(config).getRolesInPlay());
+        assertListsHaveSame(expected, new AssignmentFactory(config).getRolesInPlay());
     }
 
     public void testGetRolesInPlayForNumPlayersDivBy3() {
@@ -75,7 +66,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         List<AvalonRole> expected = Arrays.asList(
                 MINION, MINION,
                 MERLIN, LOYAL, LOYAL, LOYAL);
-        assertRoleListsEqual(expected, new AssignmentFactory(config).getRolesInPlay());
+        assertListsHaveSame(expected, new AssignmentFactory(config).getRolesInPlay());
     }
 
     public void testGetRolesInPlayShouldFailIFTooManySpecialEvil() {
@@ -109,11 +100,113 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         }
     }
 
+    public void testGetAssignmentsShouldHaveCorrectVisibilityInFullGame() {
+        GameConfiguration config = new GameConfiguration();
+        config.numPlayers = 10;
+        config.includeMerlin = true;
+        config.includePercival = true;
+        config.includeAssassin = true;
+        config.includeMordred = true;
+        config.includeOberon = true;
+        config.includeMorgana = true;
+
+        InitialAssignments ia = new AssignmentFactory(config).getAssignments(getTestPlayers(10));
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(ASSASSIN, OBERON, MORGANA)),
+                getAssignmentForRole(ia, MERLIN).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(MORDRED, MORGANA)),
+                getAssignmentForRole(ia, ASSASSIN).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(ASSASSIN, MORGANA)),
+                getAssignmentForRole(ia, MORDRED).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(ASSASSIN, MORDRED)),
+                getAssignmentForRole(ia, MORGANA).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(MERLIN, MORGANA)),
+                getAssignmentForRole(ia, PERCIVAL).seenPlayers);
+
+        assertEquals(Collections.EMPTY_SET, getAssignmentForRole(ia, OBERON).seenPlayers);
+
+        assertEquals(Collections.EMPTY_SET, getAssignmentForRole(ia, LOYAL).seenPlayers);
+    }
+
+    public void testGetAssignmentsShouldHaveCorrectVisibilityInSmallGame() {
+        GameConfiguration config = new GameConfiguration();
+        config.numPlayers = 5;
+        config.includeMerlin = true;
+        config.includeAssassin = true;
+
+        InitialAssignments ia = new AssignmentFactory(config).getAssignments(getTestPlayers(5));
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(ASSASSIN, MINION)),
+                getAssignmentForRole(ia, MERLIN).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(MINION)),
+                getAssignmentForRole(ia, ASSASSIN).seenPlayers);
+
+        assertEquals(getPlayersForRoles(ia, Arrays.asList(ASSASSIN)),
+                getAssignmentForRole(ia, MINION).seenPlayers);
+
+        assertEquals(Collections.EMPTY_SET, getAssignmentForRole(ia, LOYAL).seenPlayers);
+    }
+
+    public void testGetAssignmentsShouldOnlySetKingIfLadyNotEnabled() {
+        GameConfiguration config = new GameConfiguration();
+        config.numPlayers = 5;
+        InitialAssignments ia = new AssignmentFactory(config).getAssignments(getTestPlayers(5));
+        assertNotNull(ia.king);
+        assertNull(ia.lady);
+    }
+
+    public void testGetAssignmentsShouldSetLadyBehindKingIfLadyEnabled() {
+        GameConfiguration config = new GameConfiguration();
+        config.numPlayers = 5;
+        config.enableLadyOfTheLake = true;
+        List<PlayerName> testPlayers = getTestPlayers(5);
+        InitialAssignments ia = new AssignmentFactory(config).getAssignments(testPlayers);
+        assertNotNull(ia.king);
+        assertNotNull(ia.lady);
+        int kingIndex = testPlayers.indexOf(ia.king);
+        int ladyIndex = testPlayers.indexOf(ia.lady);
+        int expectedLadyIndex = (kingIndex == 0) ? 4 : kingIndex - 1;
+        assertEquals(expectedLadyIndex, ladyIndex);
+    }
+
+    private List<PlayerName> getTestPlayers(int numPlayers) {
+        List<PlayerName> result = new ArrayList<PlayerName>();
+        for (int i = 0; i < numPlayers; i++) {
+            result.add(new PlayerName(UUID.randomUUID(), "Player " + i));
+        }
+        return result;
+    }
+
+    private RoleAssignment getAssignmentForRole(InitialAssignments ia, AvalonRole role) {
+        for (RoleAssignment assignment: ia.assignments) {
+            if (assignment.role.equals(role)) {
+                return assignment;
+            }
+        }
+        return null;
+    }
+
+    private Set<PlayerName> getPlayersForRoles(
+            InitialAssignments ia, Collection<AvalonRole> roles) {
+        Set<PlayerName> result = new HashSet<PlayerName>();
+        for (RoleAssignment assignment: ia.assignments) {
+            if (roles.contains(assignment.role)) {
+                result.add(assignment.player);
+            }
+        }
+        return result;
+    }
+
     // We don't have a "bag" in Java, so make sure that order doesn't break list comparisons.
-    private void assertRoleListsEqual(List<AvalonRole> expected, List<AvalonRole> actual) {
+    private void assertListsHaveSame(List<? extends  Comparable> expected,
+                                     List<? extends Comparable> actual) {
         Collections.sort(expected);
         Collections.sort(actual);
         assertEquals(expected, actual);
     }
-
 }
