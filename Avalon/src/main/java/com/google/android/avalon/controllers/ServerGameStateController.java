@@ -10,6 +10,7 @@ import com.google.android.avalon.model.PlayerInfo;
 import com.google.android.avalon.model.ServerGameState;
 import com.google.android.avalon.rules.AssignmentFactory;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ public class ServerGameStateController implements AvalonMessageListener {
     private Set<PlayerInfo> mPlayers;
 
     // State variables that cannot change once the game starts
+    private boolean mStarted;
     private InitialAssignments mAssignments;
     private Map<PlayerInfo, Boolean> mPlayerInfoConnected;
 
@@ -51,8 +53,14 @@ public class ServerGameStateController implements AvalonMessageListener {
         if (mConfig == null || mPlayers == null) {
             return null;
         }
-        mAssignments = new AssignmentFactory(mConfig).getAssignments(mPlayers);
+        mStarted = true;
+        mAssignments = new AssignmentFactory(mConfig).getAssignments(
+                new ArrayList<PlayerInfo>(mPlayers));
         return mAssignments;
+    }
+
+    public boolean started() {
+        return mStarted;
     }
 
     // TODO

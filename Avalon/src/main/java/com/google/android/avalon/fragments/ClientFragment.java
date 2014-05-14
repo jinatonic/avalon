@@ -1,29 +1,26 @@
 package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
-import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.controllers.ClientGameStateController;
+import com.google.android.avalon.model.ClientGameState;
 import com.google.android.avalon.model.PlayerInfo;
 import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.network.BaseFromBtMessageReceiver;
-import com.google.android.avalon.network.ServiceMessageProtocol;
 
 /**
  * Created by jinyan on 5/12/14.
  */
 public class ClientFragment extends Fragment {
+    public static final String EXTRA_INITIAL_STATE = "extra_initial_state";
 
-    public static final String EXTRA_ROLE_ASSIGNMENT = "extra_role_assignment";
+    private ClientGameStateController mClientGameStateController;
 
     private TextView mRoleAssignmentText;
     private TextView mSeenPlayersLabel;
@@ -33,25 +30,17 @@ public class ClientFragment extends Fragment {
 
     private RoleAssignment mRoleAssignment;
 
-    public static ClientFragment newInstance(RoleAssignment assignment) {
-        Bundle args = new Bundle();
-        args.putSerializable(EXTRA_ROLE_ASSIGNMENT, assignment);
-
-        ClientFragment fragment = new ClientFragment();
-        fragment.setArguments(args);
-
-        return fragment;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        mClientGameStateController = ClientGameStateController.get(getActivity());
+
         View v = inflater.inflate(R.layout.client_fragment, parent, false);
 
         mRoleAssignmentText = (TextView) v.findViewById(R.id.role_assignment_text);
         mSeenPlayersLabel = (TextView) v.findViewById(R.id.seen_players_label);
         mSeenPlayersText = (TextView) v.findViewById(R.id.seen_players_text);
 
-        setRoleAssignment((RoleAssignment) getArguments().getSerializable(EXTRA_ROLE_ASSIGNMENT));
+        update();
 
         return v;
     }
@@ -62,16 +51,9 @@ public class ClientFragment extends Fragment {
         mReceiver.detach(getActivity());
     }
 
-    /**
-     * Helper callback to perform action for each type of AvalonMessage
-     */
-    public void handleMessage(AvalonMessage message) {
-        if (message instanceof RoleAssignment) {
-            setRoleAssignment((RoleAssignment) message);
-        } else {
-            Log.w(AvalonActivity.TAG,
-                    "Ignoring unrecognized message of type: " + message.getClass());
-        }
+    public void update() {
+        ClientGameState gameState = mClientGameStateController.getCurrentGameState();
+        // TODO
     }
 
     private void setRoleAssignment(RoleAssignment mRoleAssignment) {

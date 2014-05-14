@@ -7,8 +7,11 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,38 +19,79 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.android.R;
+import com.google.android.avalon.controllers.ClientGameStateController;
+import com.google.android.avalon.controllers.ServerGameStateController;
+import com.google.android.avalon.fragments.ClientFragment;
 import com.google.android.avalon.fragments.RoleSelectionFragment;
+import com.google.android.avalon.fragments.ServerFragment;
 import com.google.android.avalon.fragments.SetupClientFragment;
 import com.google.android.avalon.fragments.SetupServerFragment;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
 import com.google.android.avalon.model.PlayerInfo;
 import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
+import com.google.android.avalon.network.ServiceMessageProtocol;
 
 import java.util.UUID;
 
 
 public class AvalonActivity extends Activity implements RoleSelectorCallback {
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final String IS_SERVER_KEY = "is_server_key";
+    private static final String GAME_PROGRESSION_KEY = "game_progression_key";
+
+    private static final int ROLE_SELECTION = 0;
+    private static final int SETTING_UP_BT = 1;
+    private static final int GAME_IN_PROGRESS = 2;
 
     public static final UUID CLIENT_SERVER_UUID = new UUID(123456789, 987654321);
 
     public static final String TAG = AvalonActivity.class.getSimpleName();
+
+    private BroadcastReceiver mReceiver;
+
+    private boolean mIsServer;
+    private int mGameProgression;
+
+    // Fragment pointers
+    private RoleSelectionFragment mRoleSelectionFragment;
+    private SetupServerFragment mSetupServerFragment;
+    private SetupClientFragment mSetupClientFragment;
+    private ServerFragment mServerFragment;
+    private ClientFragment mClientFragment;
+
+    // Game controller pointers
+    private ServerGameStateController mServerGameStateController;
+    private ClientGameStateController mClientGameStateController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avalon);
 
-        // Resume fragment states and reset pointers
-        FragmentManager fm = getFragmentManager();
-        if (fm.findFragmentById(R.id.fragment_container) == null) {
-            // Initially show the role selection fragment if fragment is null
-            RoleSelectionFragment frag = new RoleSelectionFragment();
-            fm.beginTransaction()
-                    .add(R.id.fragment_container, frag)
-                    .commit();
+        if (savedInstanceState != null) {
+            mIsServer = savedInstanceState.getBoolean(IS_SERVER_KEY);
+            mGameProgression = savedInstanceState.getInt(GAME_PROGRESSION_KEY);
+        } else {
+            mIsServer = false;  // will be replaced later anyway
+            mGameProgression = ROLE_SELECTION;
         }
+
+        mRoleSelectionFragment = new RoleSelectionFragment();
+        mSetupServerFragment = new SetupServerFragment();
+        mSetupClientFragment = new SetupClientFragment();
+        mServerFragment = new ServerFragment();
+        mClientFragment = new ClientFragment();
+
+        mServerGameStateController = ServerGameStateController.get(this);
+        mClientGameStateController = ClientGameStateController.get(this);
+
+        mReceiver = new BtMessageReceiver();
+        IntentFilter filter = new IntentFilter(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT);
+        registerReceiver(mReceiver, filter);
+
+        // Resume fragment states and reset pointers
+        updateFragment();
 
         // Check for bluetooth adapter and retrieve it
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -63,6 +107,19 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(IS_SERVER_KEY, mIsServer);
+        outState.putInt(GAME_PROGRESSION_KEY, mGameProgression);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode != Activity.RESULT_OK) {
@@ -73,11 +130,73 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * This function basically tells the appropriate fragment to update its data from the
+     * game state controller.
+     */
+    private void notifyDataChanged() {
+        switch (mGameProgression) {
+            case ROLE_SELECTION:
+                // Should never happen, can't have any data without even choosing the role
+                break;
+            case SETTING_UP_BT:
+                // Let's first check if the game has started and progress if so
+                if ((mIsServer && mServerGameStateController.started()) ||
+                        (!mIsServer && mClientGameStateController.started())) {
+                    mGameProgression = GAME_IN_PROGRESS;
+                    updateFragment();
+                    // Don't need to actually notify data change because the fragment change will
+                    // do that automatically in onCreateView
+                    break;
+                }
+                if (mIsServer) {
+                    mSetupServerFragment.update();
+                } else {
+                    mSetupClientFragment.update();
+                }
+                break;
+            case GAME_IN_PROGRESS:
+                if (mIsServer) {
+                    mSetupServerFragment.update();
+                } else {
+                    mSetupClientFragment.update();
+                }
+                break;
+            default:
+                Log.w(TAG, "game progression not recognized: " + mGameProgression);
+                break;
+        }
+    }
+
+    private void updateFragment() {
+        Fragment frag = null;
+        switch (mGameProgression) {
+            case ROLE_SELECTION:
+                frag = mRoleSelectionFragment;
+                break;
+            case SETTING_UP_BT:
+                frag = (mIsServer) ? mSetupServerFragment : mSetupClientFragment;
+                break;
+            case GAME_IN_PROGRESS:
+                frag = (mIsServer) ? mServerFragment : mClientFragment;
+                break;
+            default:
+                Log.w(TAG, "game progression not recognized: " + mGameProgression);
+                break;
+        }
+
+        if (frag != null) {
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, frag)
+                    .commit();
+        }
+    }
+
     @Override
     public void onRoleSelected(boolean isServer) {
         Log.d(TAG, "on role selected: isServer? " + isServer);
-        Fragment fragment;
         // Set up the appropriate fragments and initialize the services
+        mIsServer = isServer;
         if (isServer) {
             // TODO add flag to prevent spamming this.
             Intent discoverableIntent = new
@@ -85,22 +204,18 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
             startActivity(discoverableIntent);
 
-            fragment = new SetupServerFragment();
             Intent i = new Intent(this, BluetoothServerService.class);
             // TODO: add input for this
             i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 1);
             startService(i);
-        } else {
-            fragment = new SetupClientFragment();
 
+        } else {
             DialogFragment dialog = new NameInputDialog();
             dialog.show(getFragmentManager(), "name_input_dialog");
         }
 
-        // Instantiate and show the new fragment
-        getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+        mGameProgression = SETTING_UP_BT;
+        updateFragment();
     }
 
     /**
@@ -113,6 +228,18 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
         dialog.show(fm, "error_dialog");
     }
 
+    private class BtMessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra(ServiceMessageProtocol.DATA_CHANGED)) {
+                notifyDataChanged();
+            }
+        }
+    }
+
+    /**
+     * Dialog to show an error message associated with bluetooth requirement.
+     */
     public static class ShowBtErrorFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -129,6 +256,9 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
         }
     }
 
+    /**
+     * Dialog to show an input box for player's name.
+     */
     public static class NameInputDialog extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {

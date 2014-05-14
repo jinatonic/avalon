@@ -7,9 +7,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.R;
+import com.google.android.avalon.controllers.ServerGameStateController;
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
+import com.google.android.avalon.model.ServerGameState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,11 +24,19 @@ import java.util.Set;
  */
 public class ServerFragment extends Fragment {
 
+    private ServerGameStateController mServerGameStateController;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        mServerGameStateController = ServerGameStateController.get(getActivity());
+
         View v = inflater.inflate(R.layout.server_fragment, parent, false);
         return v;
     }
 
+    public void update() {
+        ServerGameState gameState = mServerGameStateController.getCurrentGameState();
+        // TODO
+    }
 
 }
