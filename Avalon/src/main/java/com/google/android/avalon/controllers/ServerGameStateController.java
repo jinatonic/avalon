@@ -53,7 +53,7 @@ public class ServerGameStateController extends GameStateController {
     /**
      * Attempts to start the game, returns the initial assignments on success or null on failure.
      */
-    public void startGame() {
+    private void startGame() {
         if (mConfig == null || mGameState.players == null ||
                 mConfig.numPlayers != mGameState.numPlayers()) {
             return;

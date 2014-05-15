@@ -106,7 +106,7 @@ public class BluetoothServerService extends BluetoothService {
 
         // remove from socket reader writer map
         if (mSocketReaderWriterMap.containsKey(socket)) {
-            mSocketReaderWriterMap.get(socket).reader.interrupt();
+            mSocketReaderWriterMap.get(socket).reader.terminate();
             mSocketReaderWriterMap.get(socket).writer.terminate();
             mSocketReaderWriterMap.remove(socket);
         }

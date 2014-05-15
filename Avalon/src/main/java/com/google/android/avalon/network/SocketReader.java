@@ -24,6 +24,14 @@ public class SocketReader extends Thread {
         mController = controller;
     }
 
+    public void terminate() {
+        if (mSocket != null) {
+            try {
+                mSocket.close();
+            } catch (IOException e) { }
+        }
+    }
+
     /**
      * The thread will simply keep running until the socket gets closed or IOException occurs on
      * the input stream.

@@ -80,7 +80,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         try {
             new AssignmentFactory(config).getRolesInPlay();
             fail("Exception not thrown");
-        } catch (IllegalStateException e) {
+        } catch (IllegalConfigurationException e) {
             assertEquals(
                     "Too many special evil roles requested. A game with 5 players, supports 2 " +
                             "evil players. 3 were requested.", e.getMessage()
@@ -95,7 +95,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
         try {
             new AssignmentFactory(config).getRolesInPlay();
             fail("Exception not thrown");
-        } catch (IllegalStateException e) {
+        } catch (IllegalConfigurationException e) {
             assertEquals("Too few players. 5 required, only 4 provided.", e.getMessage());
         }
     }

@@ -7,7 +7,29 @@
     <string name="server">Server</string>
     <string name="client">Client</string>
 
+    <string name="start_game">Start Game</string>
     <string name="role_label">You are: </string>
     <string name="seen_players_label">You see: </string>
 
+
+    <string name="assassin">Assassin</string>
+    <string name="loyal">Loyal</string>
+    <string name="merlin">Merlin</string>
+    <string name="minion">Minion</string>
+    <string name="mordred">Mordred</string>
+    <string name="morgana">Morgana</string>
+    <string name="oberon">Oberon</string>
+    <string name="percival">Percival</string>
+
+
+    <string-array name="planets_array">
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
 </resources>

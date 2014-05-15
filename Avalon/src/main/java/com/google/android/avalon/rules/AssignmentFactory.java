@@ -20,6 +20,9 @@ import java.util.Set;
 * Created by mikewallstedt on 5/13/14.
 */
 public class AssignmentFactory {
+    public static final int MIN_PLAYERS = 5;
+    public static final int MAX_PLAYERS = 10;
+
     private final GameConfiguration mGameConfiguration;
 
     public AssignmentFactory(GameConfiguration mGameConfiguration) {
@@ -30,7 +33,7 @@ public class AssignmentFactory {
             throws IllegalStateException {
         List<AvalonRole> rolesInPlay = getRolesInPlay();
         if (players.size() != rolesInPlay.size()) {
-            throw new IllegalStateException(
+            throw new IllegalConfigurationException(
                     String.format("Cannot assign %d roles to %d players.",
                             rolesInPlay.size(), players.size()));
         }
@@ -61,7 +64,7 @@ public class AssignmentFactory {
     // VisibleForTesting
     List<AvalonRole> getRolesInPlay() {
         if (mGameConfiguration.numPlayers < 5) {
-            throw new IllegalStateException(
+            throw new IllegalConfigurationException(
                     String.format("Too few players. 5 required, only %d provided.",
                             mGameConfiguration.numPlayers));
         }
@@ -73,7 +76,7 @@ public class AssignmentFactory {
                 "Too many special evil roles requested. A game with %d players, supports %d " +
                         "evil players. %d were requested.",
                     mGameConfiguration.numPlayers, numEvil, specialEvil.size());
-            throw new IllegalStateException(message);
+            throw new IllegalConfigurationException(message);
         }
 
         List<AvalonRole> rolesInPlay = new ArrayList<AvalonRole>();
