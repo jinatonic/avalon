@@ -9,4 +9,9 @@ public class QuestExecution extends AvalonMessage {
     public QuestExecution(int q) {
         questNum = q;
     }
+
+    @Override
+    public String toString() {
+        return "Quest execution " + questNum;
+    }
 }

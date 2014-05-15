@@ -1,5 +1,7 @@
 package com.google.android.avalon.model.messages;
 
+import android.os.Parcelable;
+
 import java.io.Serializable;
 import java.util.UUID;
 

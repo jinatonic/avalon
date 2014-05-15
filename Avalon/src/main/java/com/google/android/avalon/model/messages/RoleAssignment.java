@@ -13,11 +13,16 @@ public class RoleAssignment extends AvalonMessage {
 
     public final PlayerInfo player;
     public final AvalonRole role;
-    public final Set<PlayerInfo> seenPlayers;
+    public final PlayerInfo[] seenPlayers;
 
-    public RoleAssignment(PlayerInfo player, AvalonRole role, Set<PlayerInfo> seenPlayers) {
+    public RoleAssignment(PlayerInfo player, AvalonRole role, PlayerInfo[] seenPlayers) {
         this.player = player;
         this.role = role;
-        this.seenPlayers = Collections.unmodifiableSet(seenPlayers);
+        this.seenPlayers = seenPlayers;
+    }
+
+    @Override
+    public String toString() {
+        return "Role: " + player + " - " + role + " - " + seenPlayers;
     }
 }

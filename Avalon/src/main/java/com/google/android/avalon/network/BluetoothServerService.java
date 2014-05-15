@@ -9,10 +9,12 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
+import com.google.android.avalon.model.MessageParser;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.controllers.ServerGameStateController;
+import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -129,21 +131,21 @@ public class BluetoothServerService extends BluetoothService {
     // A BroadcastReceiver for our custom messages between app and service
     private class ServiceMessageReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(ServiceMessageProtocol.PLAYER_INFO_KEY)) {
-                PlayerInfo info = (PlayerInfo) intent.getSerializableExtra(
-                        ServiceMessageProtocol.PLAYER_INFO_KEY);
-                AvalonMessage message = (AvalonMessage) intent.getSerializableExtra(
-                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+            if (intent.hasExtra(ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY)) {
+                ToBtMessageWrapper wrapper = (ToBtMessageWrapper) intent.getSerializableExtra(
+                        ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY);
 
                 // Tell UI of updates just to keep everything in sync
                 broadcastUpdate();
 
                 // Find the appropriate socket and write to it
-                BluetoothSocket socket = mPlayerSocketMap.get(info);
-                if (socket != null) {
-                    SocketReaderWriterWrapper wrapper = mSocketReaderWriterMap.get(socket);
-                    if (wrapper != null) {
-                        wrapper.writer.send(message);
+                for (int i = 0; i < wrapper.size(); i++) {
+                    BluetoothSocket socket = mPlayerSocketMap.get(wrapper.player.get(i));
+                    if (socket != null) {
+                        SocketReaderWriterWrapper readerWriter = mSocketReaderWriterMap.get(socket);
+                        if (readerWriter != null) {
+                            readerWriter.writer.send(wrapper.message.get(i));
+                        }
                     }
                 }
             }

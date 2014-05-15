@@ -14,12 +14,17 @@ public class InitialAssignments extends AvalonMessage {
     private static final long serialVersionUID = 1L;
 
     public final Set<RoleAssignment> assignments;
+    public final int numGood;
+    public final int numEvil;
     public final PlayerInfo king;
     public final PlayerInfo lady;   // can be null
 
-    public InitialAssignments(Set<RoleAssignment> assignments, PlayerInfo king, PlayerInfo lady) {
+    public InitialAssignments(Set<RoleAssignment> assignments, PlayerInfo king, PlayerInfo lady,
+            int numGood, int numEvil) {
         this.assignments = Collections.unmodifiableSet(assignments);
         this.king = king;
         this.lady = lady;
+        this.numGood = numGood;
+        this.numEvil = numEvil;
     }
 }

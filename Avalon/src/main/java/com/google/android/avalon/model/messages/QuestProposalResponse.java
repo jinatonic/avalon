@@ -15,4 +15,9 @@ public class QuestProposalResponse extends AvalonMessage {
         approve = a;
         propNum = n;
     }
+
+    @Override
+    public String toString() {
+        return player + " voted " + approve + " for " + propNum;
+    }
 }

@@ -9,4 +9,9 @@ public class GameOverMessage extends AvalonMessage {
     public GameOverMessage(boolean g) {
         goodWon = g;
     }
+
+    @Override
+    public String toString() {
+        return (goodWon) ? "Good wins!" : "Evil wins!";
+    }
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.ServerGameState;
@@ -16,11 +17,12 @@ import com.google.android.avalon.model.messages.QuestExecution;
 import com.google.android.avalon.model.messages.QuestExecutionResponse;
 import com.google.android.avalon.model.messages.QuestProposal;
 import com.google.android.avalon.model.messages.QuestProposalResponse;
+import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.network.ServiceMessageProtocol;
+import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,18 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
     // Note that mMessages should be cleared after every event
     Map<PlayerInfo, AvalonMessage> mMessages;
 
+    // Player pointers
+    PlayerInfo player0 = new PlayerInfo("Player0");
+    PlayerInfo player1 = new PlayerInfo("Player1");
+    PlayerInfo player2 = new PlayerInfo("Player2");
+    PlayerInfo player3 = new PlayerInfo("Player3");
+    PlayerInfo player4 = new PlayerInfo("Player4");
+    PlayerInfo player5 = new PlayerInfo("Player5");
+    PlayerInfo player6 = new PlayerInfo("Player6");
+    List<PlayerInfo> players = Arrays.asList(new PlayerInfo[] {
+            player0, player1, player2, player3, player4, player5, player6
+    });
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -46,14 +60,15 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                PlayerInfo info = (PlayerInfo) intent.getSerializableExtra(
-                        ServiceMessageProtocol.PLAYER_INFO_KEY);
-                AvalonMessage msg = (AvalonMessage) intent.getSerializableExtra(
-                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
-                if (mMessages.containsKey(info)) {
-                    fail("Duplicate message was sent to the same receiver!");
-                } else {
-                    mMessages.put(info, msg);
+                ToBtMessageWrapper wrapper = (ToBtMessageWrapper) intent.getSerializableExtra(
+                        ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY);
+                Log.i("Testing", System.currentTimeMillis() + " Message received: " + wrapper);
+                for (int i = 0; i < wrapper.size(); i++) {
+                    if (mMessages.containsKey(wrapper.player.get(i))) {
+                        fail("Duplicate message was sent to the same receiver!");
+                    } else {
+                        mMessages.put(wrapper.player.get(i), wrapper.message.get(i));
+                    }
                 }
             }
         };
@@ -89,18 +104,6 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         config.numPlayers = 7;
 
         mController.setConfig(config);
-
-        // Player pointers
-        PlayerInfo player0 = new PlayerInfo("Player0");
-        PlayerInfo player1 = new PlayerInfo("Player1");
-        PlayerInfo player2 = new PlayerInfo("Player2");
-        PlayerInfo player3 = new PlayerInfo("Player3");
-        PlayerInfo player4 = new PlayerInfo("Player4");
-        PlayerInfo player5 = new PlayerInfo("Player5");
-        PlayerInfo player6 = new PlayerInfo("Player6");
-        List<PlayerInfo> players = Arrays.asList(new PlayerInfo[] {
-            player0, player1, player2, player3, player4, player5, player6
-        });
 
         // Start sending it player data
         mController.processAvalonMessage(player0);
@@ -145,7 +148,8 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         assertEquals(player0, gameState.players.get(0));
         assertEquals(0, mMessages.size());
 
-        // Check start game messages
+
+        // START GAME!!!!!
         mController.processAvalonMessage(new GameStartMessage());
 
         // Check for resulting state
@@ -157,7 +161,23 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         PlayerInfo king = gameState.currentKing;
         int kingIndex = players.indexOf(king);
 
+        // Check the outgoing messages and game state
         validateGameState(gameState, king, null, false, 0, 0, 0, true, null, propResponses, null, execResponses);
+        validateOutgoingBroadcast(RoleAssignment.class);
+        mMessages.clear();
+
+        // FIRST QUEST - 2 players go on the quest
+
+        // Proposal 1 (index 0)
+        PlayerInfo[] proposedPlayers = new PlayerInfo[] { player0, player1 };
+        QuestProposal proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        mController.processAvalonMessage(proposal);
+
+        // Check the outgoing messages and game state
+        validateGameState(gameState, king, null, false, 0, 0, 0, false, proposal, propResponses, null, execResponses);
+        validateOutgoingBroadcast(QuestProposal.class);
+        // Check one QuestProposal for sanity
+        assertEquals(proposal, mMessages.get(player0));
     }
 
     private void validateGameState(ServerGameState gameState, PlayerInfo king, PlayerInfo lady,
@@ -184,5 +204,23 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         // For lists, we don't care about ordering
         assertTrue(new HashSet<QuestExecutionResponse>(lastExecRsps)
                 .containsAll(gameState.lastQuestExecutionResponses));
+    }
+
+    private void validateOutgoingBroadcast(Class expectedClass) {
+        assertEquals(7, mMessages.size());
+        assertTrue(mMessages.containsKey(player0));
+        assertEquals(expectedClass, mMessages.get(player0).getClass());
+        assertTrue(mMessages.containsKey(player1));
+        assertEquals(expectedClass, mMessages.get(player1).getClass());
+        assertTrue(mMessages.containsKey(player2));
+        assertEquals(expectedClass, mMessages.get(player2).getClass());
+        assertTrue(mMessages.containsKey(player3));
+        assertEquals(expectedClass, mMessages.get(player3).getClass());
+        assertTrue(mMessages.containsKey(player4));
+        assertEquals(expectedClass, mMessages.get(player4).getClass());
+        assertTrue(mMessages.containsKey(player5));
+        assertEquals(expectedClass, mMessages.get(player5).getClass());
+        assertTrue(mMessages.containsKey(player6));
+        assertEquals(expectedClass, mMessages.get(player6).getClass());
     }
 }

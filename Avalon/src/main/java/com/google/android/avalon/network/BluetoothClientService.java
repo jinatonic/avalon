@@ -13,9 +13,11 @@ import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.avalon.controllers.ClientGameStateController;
+import com.google.android.avalon.model.MessageParser;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
+import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -147,15 +149,17 @@ public class BluetoothClientService extends BluetoothService {
     // A BroadcastReceiver for our custom messages between app and service
     private class ServiceMessageReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
-                AvalonMessage message = (AvalonMessage) intent.getSerializableExtra(
-                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+            if (intent.hasExtra(ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY)) {
+                ToBtMessageWrapper wrappers = (ToBtMessageWrapper) intent.getSerializableExtra(
+                        ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY);
 
                 // Tell UI of updates just to keep everything in sync
                 broadcastUpdate();
 
                 // Find the appropriate socket and write to it
-                mWriter.send(message);
+                for (int i = 0; i < wrappers.size(); i++) {
+                    mWriter.send(wrappers.message.get(i));
+                }
             }
         }
     }

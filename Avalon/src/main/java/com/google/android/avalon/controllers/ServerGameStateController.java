@@ -17,7 +17,11 @@ import com.google.android.avalon.model.messages.QuestProposal;
 import com.google.android.avalon.model.messages.QuestProposalResponse;
 import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.model.ServerGameState;
+import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 import com.google.android.avalon.rules.AssignmentFactory;
+import com.google.android.avalon.rules.IllegalConfigurationException;
+
+import java.util.Set;
 
 /**
  * Created by jinyan on 5/14/14.
@@ -60,15 +64,17 @@ public class ServerGameStateController extends GameStateController {
         }
 
         try {
+            mGameState.campaignInfo = new BoardCampaignInfo(mGameState.players.size());
             mGameState.assignments = new AssignmentFactory(mConfig).getAssignments(
                     mGameState.players);
 
             // Started successfully
             Log.i(TAG, "Game starting");
             mStarted = true;
-        } catch (IllegalStateException e) {
+        } catch (IllegalConfigurationException e) {
             // We failed to assign players.
             // TODO: Notify UI.
+            mGameState.campaignInfo = null;
             return;
         }
 
@@ -76,14 +82,15 @@ public class ServerGameStateController extends GameStateController {
         mGameState.needQuestProposal = true;
         mGameState.currentNumAttempts = 0;
         mGameState.questNum = 0;
-        mGameState.campaignInfo = new BoardCampaignInfo(mGameState.players.size());
         mGameState.currentKing = mGameState.assignments.king;
         mGameState.currentLady = mGameState.assignments.lady;
 
         // Notify everyone of their assignments
+        ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
         for (RoleAssignment assignment : mGameState.assignments.assignments) {
-            sendAvalonMessage(assignment.player, assignment);
+            wrapper.add(assignment.player, assignment);
         }
+        sendBulkMessages(wrapper);
     }
 
     // TODO
@@ -124,11 +131,17 @@ public class ServerGameStateController extends GameStateController {
         }
 
         // QuestProposal, save it in the state variable and broadcast it to all players
-        else if (msg instanceof QuestProposal) {
-            mGameState.needQuestProposal = false;
-            mGameState.lastQuestProposal = (QuestProposal) msg;
-            mGameState.lastQuestProposalResponses.clear();
-            broadcastMessageToAllPlayers(msg);
+        else if (msg instanceof QuestProposal && mGameState.needQuestProposal) {
+            // Check that the number of players match the number the quest needs for sanity
+            // since this SHOULD be enforced by the UI.
+            QuestProposal proposal = (QuestProposal) msg;
+            if (proposal.questMembers.length ==
+                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
+                mGameState.needQuestProposal = false;
+                mGameState.lastQuestProposal = proposal;
+                mGameState.lastQuestProposalResponses.clear();
+                broadcastMessageToAllPlayers(msg);
+            }
         }
 
         // QuestProposalResponse, record it. Only advance once all player's responses are received.
@@ -155,9 +168,11 @@ public class ServerGameStateController extends GameStateController {
                     boolean proposalPassed = difference > 0;
                     if (proposalPassed) {
                         // Send votes to proposed team
-                        for (PlayerInfo player : mGameState.lastQuestProposal.questMembers) {
-                            sendAvalonMessage(player, new QuestExecution(mGameState.quests.size()));
+                        ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
+                        for (PlayerInfo member : mGameState.lastQuestProposal.questMembers) {
+                            wrapper.add(member, new QuestExecution(mGameState.quests.size()));
                         }
+                        sendBulkMessages(wrapper);
                     } else {
                         mGameState.currentNumAttempts++;
                         if (mGameState.currentNumAttempts > 4) {
@@ -202,9 +217,11 @@ public class ServerGameStateController extends GameStateController {
     }
 
     private void broadcastMessageToAllPlayers(AvalonMessage msg) {
+        ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
         for (PlayerInfo player : mGameState.players) {
-            sendAvalonMessage(player, msg);
+            wrapper.add(player, msg);
         }
+        sendBulkMessages(wrapper);
     }
 
     private void addQuestResultAndCheckCompletion(boolean passed) {

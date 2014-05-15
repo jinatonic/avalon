@@ -24,13 +24,19 @@ public class AssignmentFactory {
     public static final int MAX_PLAYERS = 10;
 
     private final GameConfiguration mGameConfiguration;
+    private final int mNumGood;
+    private final int mNumEvil;
 
     public AssignmentFactory(GameConfiguration mGameConfiguration) {
         this.mGameConfiguration = mGameConfiguration;
+
+        mNumEvil = mGameConfiguration.numPlayers % 3 == 0 ?
+                mGameConfiguration.numPlayers / 3 : mGameConfiguration.numPlayers / 3 + 1;
+        mNumGood = mGameConfiguration.numPlayers - mNumEvil;
     }
 
     public InitialAssignments getAssignments(List<PlayerInfo> players)
-            throws IllegalStateException {
+            throws IllegalConfigurationException {
         List<AvalonRole> rolesInPlay = getRolesInPlay();
         if (players.size() != rolesInPlay.size()) {
             throw new IllegalConfigurationException(
@@ -46,7 +52,7 @@ public class AssignmentFactory {
 
         Set<RoleAssignment> assignments = new HashSet<RoleAssignment>();
         for (PlayerInfo player: players) {
-            Set<PlayerInfo> seenBy = getSeenBy(playerToRole, player);
+            PlayerInfo[] seenBy = getSeenBy(playerToRole, player);
             assignments.add(new RoleAssignment(player, playerToRole.get(player), seenBy));
         }
 
@@ -58,7 +64,7 @@ public class AssignmentFactory {
             lady = players.get(ladyIndex);
         }
 
-        return new InitialAssignments(assignments, king, lady);
+        return new InitialAssignments(assignments, king, lady, mNumGood, mNumEvil);
     }
 
     // VisibleForTesting
@@ -68,20 +74,18 @@ public class AssignmentFactory {
                     String.format("Too few players. 5 required, only %d provided.",
                             mGameConfiguration.numPlayers));
         }
-        int numEvil = mGameConfiguration.numPlayers % 3 == 0 ?
-                mGameConfiguration.numPlayers / 3 : mGameConfiguration.numPlayers / 3 + 1;
         Collection<AvalonRole> specialEvil = getSpecialEvil();
-        if (specialEvil.size() > numEvil) {
+        if (specialEvil.size() > mNumEvil) {
             String message = String.format(
                 "Too many special evil roles requested. A game with %d players, supports %d " +
                         "evil players. %d were requested.",
-                    mGameConfiguration.numPlayers, numEvil, specialEvil.size());
+                    mGameConfiguration.numPlayers, mNumEvil, specialEvil.size());
             throw new IllegalConfigurationException(message);
         }
 
         List<AvalonRole> rolesInPlay = new ArrayList<AvalonRole>();
         rolesInPlay.addAll(specialEvil);
-        for (int i = rolesInPlay.size(); i < numEvil; i++) {
+        for (int i = rolesInPlay.size(); i < mNumEvil; i++) {
             rolesInPlay.add(AvalonRole.MINION);
         }
         rolesInPlay.addAll(getSpecialGood());
@@ -119,7 +123,7 @@ public class AssignmentFactory {
         return result;
     }
 
-    private Set<PlayerInfo> getSeenBy(Map<PlayerInfo, AvalonRole> playerToRole, PlayerInfo player) {
+    private PlayerInfo[] getSeenBy(Map<PlayerInfo, AvalonRole> playerToRole, PlayerInfo player) {
         Set<PlayerInfo> seenBy = new HashSet<PlayerInfo>();
         switch(playerToRole.get(player)) {
             case MERLIN:
@@ -151,6 +155,7 @@ public class AssignmentFactory {
                 break;
             // LOYAL and OBERON see nothing.
         }
-        return seenBy;
+        PlayerInfo[] result = new PlayerInfo[seenBy.size()];
+        return seenBy.toArray(result);
     }
 }

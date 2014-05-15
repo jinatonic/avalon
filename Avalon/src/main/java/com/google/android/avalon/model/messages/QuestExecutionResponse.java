@@ -13,4 +13,9 @@ public class QuestExecutionResponse extends AvalonMessage {
         pass = p;
         questNum = q;
     }
+
+    @Override
+    public String toString() {
+        return player + " responded to quest execution " + questNum + " with: " + pass;
+    }
 }

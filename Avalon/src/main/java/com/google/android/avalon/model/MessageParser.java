@@ -11,6 +11,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * Created by jinyan on 5/13/14.
@@ -18,7 +19,7 @@ import java.io.ObjectOutputStream;
 public class MessageParser {
     private static final String TAG = MessageParser.class.getSimpleName();
 
-    public static final int MAX_NUM_BYTES = 4096;
+    public static final int MAX_NUM_BYTES = 2048;
 
     public static AvalonMessage parse(byte[] input) {
         ByteArrayInputStream bis = new ByteArrayInputStream(input);

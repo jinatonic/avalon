@@ -9,4 +9,9 @@ public class PlayerDisconnected extends AvalonMessage {
     public PlayerDisconnected(PlayerInfo i) {
         info = i;
     }
+
+    @Override
+    public String toString() {
+        return info + " disconnected";
+    }
 }
