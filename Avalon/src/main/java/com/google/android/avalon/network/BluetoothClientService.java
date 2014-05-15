@@ -73,6 +73,12 @@ public class BluetoothClientService extends BluetoothService {
         notifyControllerAndUi(mPlayerInfo);
 
         if (mServerSocket == null || !mServerSocket.isConnected()) {
+            // First we post all the runnables for paired devices
+            Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+            for (BluetoothDevice device : pairedDevices) {
+                mHandler.post(new ConnectRunnable(device));
+            }
+
             Log.d(TAG, "Starting discovery process");
             resetHandler();
 
@@ -192,6 +198,11 @@ public class BluetoothClientService extends BluetoothService {
         }
 
         public void run() {
+            // If we already found a server, let's skip
+            if (mServerSocket != null && mServerSocket.isConnected()) {
+                return;
+            }
+
             try {
                 BluetoothSocket socket = null;
                 try {
