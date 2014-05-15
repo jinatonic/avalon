@@ -8,5 +8,5 @@ import java.io.Serializable;
  * This class should fully represent the current game state so UI has all the information it needs.
  */
 public class ServerGameState implements Serializable {
-    // TODO IMPLEMENT ME
+
 }

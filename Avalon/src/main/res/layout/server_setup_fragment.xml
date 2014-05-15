@@ -6,6 +6,64 @@
     android:layout_height="match_parent"
     android:gravity="center">
 
+     <Spinner
+         android:id="@+id/num_players_widget"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"/>
+
+    <ListView
+        android:id="@+id/select_players_widget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow>
+            <CheckBox
+                android:id="@+id/assassin_selected_widget"
+                android:text="@string/assassin"
+                android:layout_weight="1"
+                />
+            <CheckBox
+                android:id="@+id/merlin_selected_widget"
+                android:text="@string/merlin"
+                android:layout_weight="1"
+                />
+            <CheckBox
+                android:id="@+id/percival_selected_widget"
+                android:text="@string/percival"
+                android:layout_weight="1"
+                />
+        </TableRow>
+        <TableRow>
+            <CheckBox
+                android:id="@+id/mordred_selected_widget"
+                android:text="@string/mordred"
+                android:layout_weight="1"
+                />
+            <CheckBox
+                android:id="@+id/morgana_selected_widget"
+                android:text="@string/morgana"
+                android:layout_weight="1"
+                />
+            <CheckBox
+                android:id="@+id/oberon_selected_widget"
+                android:text="@string/oberon"
+                android:layout_weight="1"
+                />
+        </TableRow>
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/start_game_widget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/start_game"/>
+
     <TextView
         android:id="@+id/server_status_text"
         android:layout_width="wrap_content"

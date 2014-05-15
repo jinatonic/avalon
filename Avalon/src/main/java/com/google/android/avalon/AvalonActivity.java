@@ -13,10 +13,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.google.android.R;
 import com.google.android.avalon.controllers.ClientGameStateController;
@@ -32,6 +35,8 @@ import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
 import com.google.android.avalon.network.ServiceMessageProtocol;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -97,12 +102,15 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
 
         // Check for bluetooth adapter and retrieve it
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter == null) {
+
+        // TODO
+        if (false && bluetoothAdapter == null) {
             // Bluetooth is not supported, gracefully exit
             bluetoothNotSupported();
         }
 
-        else if (!bluetoothAdapter.isEnabled()) {
+        // TODO
+        else if (false && !bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
@@ -189,7 +197,8 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
 
         if (frag != null) {
             getFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, frag)
+                    //.replace(R.id.fragment_container, frag)
+                    .replace(R.id.fragment_container, mSetupServerFragment)
                     .commit();
         }
     }

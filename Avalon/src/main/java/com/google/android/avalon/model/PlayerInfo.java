@@ -11,6 +11,11 @@ public class PlayerInfo extends AvalonMessage {
     public final UUID id;
     public String oldName;  // used to either change name or notify to remove
     public String name;
+    public boolean participating;
+
+    public PlayerInfo(String name) {
+        this(UUID.randomUUID(), name);
+    }
 
     public PlayerInfo(UUID id, String name) {
         this.id = id;
