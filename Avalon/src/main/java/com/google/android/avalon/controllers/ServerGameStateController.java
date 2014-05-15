@@ -7,6 +7,7 @@ import com.google.android.avalon.model.BoardCampaignInfo;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.messages.GameOverMessage;
+import com.google.android.avalon.model.messages.GameStartMessage;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.PlayerPositionChange;
@@ -47,7 +48,6 @@ public class ServerGameStateController extends GameStateController {
 
     public void setConfig(GameConfiguration config) {
         mConfig = config;
-        startGame();
     }
 
     /**
@@ -88,7 +88,7 @@ public class ServerGameStateController extends GameStateController {
 
     // TODO
     public ServerGameState getCurrentGameState() {
-        return new ServerGameState();
+        return mGameState;
     }
 
     @Override
@@ -96,15 +96,18 @@ public class ServerGameStateController extends GameStateController {
         Log.d(TAG, "processAvalonMessage: " + msg);
         // case through each type and perform appropriate action
 
-        // PlayerInfo, simply add the new info into mPlayers
-        if (msg instanceof PlayerInfo) {
-            mGameState.players.add((PlayerInfo) msg);
-            // try to start game
+        // GameStartMessage, starts the game (or at least try to)
+        if (msg instanceof GameStartMessage) {
             startGame();
         }
 
+        // PlayerInfo, simply add the new info into mPlayers
+        else if (msg instanceof PlayerInfo) {
+            mGameState.players.add((PlayerInfo) msg);
+        }
+
         // PlayerPositionChange, do exactly that
-        if (msg instanceof PlayerPositionChange) {
+        else if (msg instanceof PlayerPositionChange) {
             PlayerPositionChange pos = (PlayerPositionChange) msg;
             if (mGameState.players.contains(pos.player)) {
                 int lastPos = mGameState.players.indexOf(pos.player);

@@ -21,9 +21,9 @@ import com.google.android.R;
 import com.google.android.avalon.controllers.ServerGameStateController;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
-import com.google.android.avalon.model.PlayerInfo;
-import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.model.ServerGameState;
+import com.google.android.avalon.model.messages.PlayerInfo;
+import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.rules.AssignmentFactory;
 import com.google.android.avalon.rules.IllegalConfigurationException;
 

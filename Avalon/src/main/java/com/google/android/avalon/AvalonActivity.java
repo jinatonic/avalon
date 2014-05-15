@@ -294,8 +294,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
                             if (name != null && !name.isEmpty()) {
                                 Intent intent = new Intent(getActivity(),
                                         BluetoothClientService.class);
-                                PlayerInfo info = new PlayerInfo(UUID.randomUUID(),
-                                        v.getText().toString());
+                                PlayerInfo info = new PlayerInfo(v.getText().toString());
                                 intent.putExtra(BluetoothClientService.PLAYER_INFO_KEY, info);
                                 getActivity().startService(intent);
 

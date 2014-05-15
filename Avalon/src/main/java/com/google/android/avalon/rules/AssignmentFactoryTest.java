@@ -177,7 +177,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     private List<PlayerInfo> getTestPlayers(int numPlayers) {
         List<PlayerInfo> result = new ArrayList<PlayerInfo>();
         for (int i = 0; i < numPlayers; i++) {
-            result.add(new PlayerInfo(UUID.randomUUID(), "Player " + i));
+            result.add(new PlayerInfo("Player " + i));
         }
         return result;
     }
