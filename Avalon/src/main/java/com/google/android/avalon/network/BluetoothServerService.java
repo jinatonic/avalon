@@ -80,17 +80,17 @@ public class BluetoothServerService extends BluetoothService {
         Log.i(TAG, "broadcasting avalon message " + msg);
         showToast("Received: " + msg);
 
-        // case through each message types
+        // Special case playerinfo because we need that data
+        PlayerInfo info = null;
         if (msg instanceof PlayerInfo) {
             mPlayerSocketMap.put((PlayerInfo) msg, socket);
-        }
-
-        // find the appropriate player that's associated with the socket
-        PlayerInfo info = null;
-        for (PlayerInfo i : mPlayerSocketMap.keySet()) {
-            if (mPlayerSocketMap.get(i) == socket) {
-                info = i;
-                break;
+            info = (PlayerInfo) msg;
+        } else {
+            for (PlayerInfo i : mPlayerSocketMap.keySet()) {
+                if (mPlayerSocketMap.get(i) == socket) {
+                    info = i;
+                    break;
+                }
             }
         }
         if (info != null) {
@@ -137,6 +137,10 @@ public class BluetoothServerService extends BluetoothService {
                         ServiceMessageProtocol.PLAYER_INFO_KEY);
                 AvalonMessage message = (AvalonMessage) intent.getSerializableExtra(
                         ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+
+                // Tell UI of updates just to keep everything in sync
+                broadcastUpdate();
+
                 // Find the appropriate socket and write to it
                 BluetoothSocket socket = mPlayerSocketMap.get(info);
                 if (socket != null) {

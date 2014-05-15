@@ -1,16 +1,18 @@
 package com.google.android.avalon.controllers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.android.avalon.model.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
 import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.model.RoleAssignment;
 import com.google.android.avalon.model.ServerGameState;
 import com.google.android.avalon.rules.AssignmentFactory;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -23,11 +25,10 @@ public class ServerGameStateController extends GameStateController {
 
     // Initial configurations
     private GameConfiguration mConfig;
-    private Set<PlayerInfo> mPlayers;
+    private Set<PlayerInfo> mPlayers = new HashSet<PlayerInfo>();
 
     // State variables that cannot change once the game starts
     private InitialAssignments mAssignments;
-    private Map<PlayerInfo, Boolean> mPlayerInfoConnected;
 
     // private for singleton
     private static ServerGameStateController sServerGameStateController;
@@ -42,17 +43,29 @@ public class ServerGameStateController extends GameStateController {
         return sServerGameStateController;
     }
 
+    public void setConfig(GameConfiguration config) {
+        mConfig = config;
+        startGame();
+    }
+
     /**
      * Attempts to start the game, returns the initial assignments on success or null on failure.
      */
-    public InitialAssignments startGame() {
-        if (mConfig == null || mPlayers == null) {
-            return null;
+    public void startGame() {
+        if (mConfig == null || mPlayers == null || mConfig.numPlayers != mPlayers.size()) {
+            return;
         }
+
+        // Started successfully
+        Log.i(TAG, "Game starting");
         mStarted = true;
         mAssignments = new AssignmentFactory(mConfig).getAssignments(
                 new ArrayList<PlayerInfo>(mPlayers));
-        return mAssignments;
+
+        // Notify everyone of their assignments
+        for (RoleAssignment assignment : mAssignments.assignments) {
+            sendAvalonMessage(assignment.player, assignment);
+        }
     }
 
     // TODO
@@ -62,6 +75,11 @@ public class ServerGameStateController extends GameStateController {
 
     @Override
     public void onAvalonMessageReceived(PlayerInfo info, AvalonMessage msg) {
-
+        // case through each type and perform appropriate action
+        if (msg instanceof PlayerInfo) {
+            mPlayers.add((PlayerInfo) msg);
+            // try to start game
+            startGame();
+        }
     }
 }

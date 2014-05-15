@@ -142,10 +142,19 @@ public class BluetoothClientService extends BluetoothService {
         mHandler = new Handler(thread.getLooper());
     }
 
-    // A BroadcastReceiver for our custom messages
+    // A BroadcastReceiver for our custom messages between app and service
     private class ServiceMessageReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            // TODO: handle
+            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
+                AvalonMessage message = (AvalonMessage) intent.getSerializableExtra(
+                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
+
+                // Tell UI of updates just to keep everything in sync
+                broadcastUpdate();
+
+                // Find the appropriate socket and write to it
+                mWriter.send(message);
+            }
         }
     }
 

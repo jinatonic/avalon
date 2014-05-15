@@ -1,6 +1,7 @@
 package com.google.android.avalon.controllers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.android.avalon.interfaces.AvalonMessageListener;
 import com.google.android.avalon.model.AvalonMessage;
@@ -35,6 +36,7 @@ public class ClientGameStateController extends GameStateController {
         // TODO: finish
         if (msg instanceof RoleAssignment) {
             mStarted = true;
+            Log.i(TAG, "Game starting, role: " + msg);
         }
     }
 }
