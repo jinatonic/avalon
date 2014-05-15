@@ -2,8 +2,8 @@ package com.google.android.avalon.rules;
 
 import android.test.InstrumentationTestCase;
 
-import com.google.android.avalon.model.PlayerInfo;
-import com.google.android.avalon.model.RoleAssignment;
+import com.google.android.avalon.model.messages.PlayerInfo;
+import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;

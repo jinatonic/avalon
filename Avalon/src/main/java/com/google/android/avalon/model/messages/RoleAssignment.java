@@ -1,7 +1,8 @@
-package com.google.android.avalon.model;
+package com.google.android.avalon.model.messages;
+
+import com.google.android.avalon.model.AvalonRole;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**

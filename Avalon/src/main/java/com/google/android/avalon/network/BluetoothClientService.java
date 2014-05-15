@@ -13,9 +13,9 @@ import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.avalon.controllers.ClientGameStateController;
-import com.google.android.avalon.model.AvalonMessage;
-import com.google.android.avalon.model.ConnectionLost;
-import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.model.messages.AvalonMessage;
+import com.google.android.avalon.model.messages.PlayerDisconnected;
+import com.google.android.avalon.model.messages.PlayerInfo;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -93,7 +93,7 @@ public class BluetoothClientService extends BluetoothService {
 
         return result;
     }
-    
+
     @Override
     public void onDestroy() {
         Log.d(TAG, "BluetoothClientService getting destroyed");
@@ -129,11 +129,7 @@ public class BluetoothClientService extends BluetoothService {
             mServerSocket.close();
         } catch (IOException e) { }
         mServerSocket = null;
-        notifyControllerAndUi(new ConnectionLost());
-    }
-
-    protected void notifyControllerAndUi(AvalonMessage msg) {
-        super.notifyControllerAndUi(mPlayerInfo, msg);
+        notifyControllerAndUi(new PlayerDisconnected(mPlayerInfo));
     }
 
     /**

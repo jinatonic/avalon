@@ -4,9 +4,8 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import com.google.android.avalon.interfaces.BluetoothController;
-import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.MessageParser;
-import com.google.android.avalon.model.PlayerInfo;
 
 import java.io.IOException;
 import java.io.InputStream;

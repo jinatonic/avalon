@@ -9,9 +9,9 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
-import com.google.android.avalon.model.AvalonMessage;
-import com.google.android.avalon.model.PlayerDisconnected;
-import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.model.messages.AvalonMessage;
+import com.google.android.avalon.model.messages.PlayerDisconnected;
+import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.controllers.ServerGameStateController;
 
 import java.io.IOException;
@@ -49,7 +49,6 @@ public class BluetoothServerService extends BluetoothService {
             Log.e(TAG, "BluetoothServerService launched with invalid number of players (or none)");
             return broadcastErrorAndStop();
         }
-
 
         if (mSocketReaderWriterMap.size() < mNumPlayers) {
             mAcceptThread = new AcceptThread();
@@ -93,7 +92,7 @@ public class BluetoothServerService extends BluetoothService {
             }
         }
         if (info != null) {
-            notifyControllerAndUi(info, msg);
+            notifyControllerAndUi(msg);
         } else {
             Log.w(TAG, "onBtMessageReceived with missing player info!");
         }
@@ -123,8 +122,7 @@ public class BluetoothServerService extends BluetoothService {
         }
 
         if (oldInfo != null) {
-            PlayerDisconnected disconnected = new PlayerDisconnected(oldInfo);
-            notifyControllerAndUi(oldInfo, disconnected);
+            notifyControllerAndUi(new PlayerDisconnected(oldInfo));
         }
     }
 

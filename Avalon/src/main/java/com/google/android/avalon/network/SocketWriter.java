@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import com.google.android.avalon.interfaces.BluetoothController;
-import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.MessageParser;
 
 import java.io.IOException;

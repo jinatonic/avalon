@@ -27,7 +27,7 @@ import com.google.android.avalon.fragments.ServerFragment;
 import com.google.android.avalon.fragments.SetupClientFragment;
 import com.google.android.avalon.fragments.SetupServerFragment;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
-import com.google.android.avalon.model.PlayerInfo;
+import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
 import com.google.android.avalon.network.ServiceMessageProtocol;
@@ -208,7 +208,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
 
             Intent i = new Intent(this, BluetoothServerService.class);
             // TODO: add input for this
-            i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 1);
+            i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 2);
             startService(i);
 
         } else {

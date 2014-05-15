@@ -1,5 +1,7 @@
 package com.google.android.avalon.model;
 
+import com.google.android.avalon.model.messages.AvalonMessage;
+
 /**
  * Created by mikewallstedt on 5/13/14.
  */

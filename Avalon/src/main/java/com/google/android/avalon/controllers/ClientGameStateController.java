@@ -3,11 +3,9 @@ package com.google.android.avalon.controllers;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.android.avalon.interfaces.AvalonMessageListener;
-import com.google.android.avalon.model.AvalonMessage;
+import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.ClientGameState;
-import com.google.android.avalon.model.PlayerInfo;
-import com.google.android.avalon.model.RoleAssignment;
+import com.google.android.avalon.model.messages.RoleAssignment;
 
 /**
  * Created by jinyan on 5/14/14.
@@ -32,7 +30,7 @@ public class ClientGameStateController extends GameStateController {
     }
 
     @Override
-    public void onAvalonMessageReceived(PlayerInfo src, AvalonMessage msg) {
+    public void processAvalonMessage(AvalonMessage msg) {
         // TODO: finish
         if (msg instanceof RoleAssignment) {
             mStarted = true;

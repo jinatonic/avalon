@@ -1,4 +1,4 @@
-package com.google.android.avalon.model;
+package com.google.android.avalon.model.messages;
 
 import java.io.Serializable;
 
@@ -7,7 +7,4 @@ import java.io.Serializable;
  */
 public abstract class AvalonMessage implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    public int sequenceNum;
-    public boolean isAck = false;   // Used by messages that need client/server ACK
 }

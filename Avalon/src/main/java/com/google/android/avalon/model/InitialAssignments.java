@@ -1,5 +1,9 @@
 package com.google.android.avalon.model;
 
+import com.google.android.avalon.model.messages.AvalonMessage;
+import com.google.android.avalon.model.messages.PlayerInfo;
+import com.google.android.avalon.model.messages.RoleAssignment;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -11,7 +15,7 @@ public class InitialAssignments extends AvalonMessage {
 
     public final Set<RoleAssignment> assignments;
     public final PlayerInfo king;
-    public final PlayerInfo lady;
+    public final PlayerInfo lady;   // can be null
 
     public InitialAssignments(Set<RoleAssignment> assignments, PlayerInfo king, PlayerInfo lady) {
         this.assignments = Collections.unmodifiableSet(assignments);

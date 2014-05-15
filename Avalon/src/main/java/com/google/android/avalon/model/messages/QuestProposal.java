@@ -1,4 +1,4 @@
-package com.google.android.avalon.model;
+package com.google.android.avalon.model.messages;
 
 import java.util.Set;
 
@@ -10,5 +10,11 @@ public class QuestProposal extends AvalonMessage {
 
     public Set<PlayerInfo> questMembers;
     public PlayerInfo proposer;
-    public int propNum;
+    public int propNum; // 0-based index
+
+    public QuestProposal(Set<PlayerInfo> q, PlayerInfo p, int n) {
+        questMembers = q;
+        proposer = p;
+        propNum = n;
+    }
 }

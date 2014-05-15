@@ -1,4 +1,4 @@
-package com.google.android.avalon.model;
+package com.google.android.avalon.model.messages;
 
 /**
  * Created by jinyan on 5/14/14.

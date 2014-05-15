@@ -3,8 +3,8 @@ package com.google.android.avalon.rules;
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
-import com.google.android.avalon.model.PlayerInfo;
-import com.google.android.avalon.model.RoleAssignment;
+import com.google.android.avalon.model.messages.PlayerInfo;
+import com.google.android.avalon.model.messages.RoleAssignment;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +26,8 @@ public class AssignmentFactory {
         this.mGameConfiguration = mGameConfiguration;
     }
 
-    public InitialAssignments getAssignments(List<PlayerInfo> players) {
+    public InitialAssignments getAssignments(List<PlayerInfo> players)
+            throws IllegalStateException {
         List<AvalonRole> rolesInPlay = getRolesInPlay();
         if (players.size() != rolesInPlay.size()) {
             throw new IllegalStateException(

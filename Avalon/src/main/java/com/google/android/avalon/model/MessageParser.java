@@ -2,6 +2,8 @@ package com.google.android.avalon.model;
 
 import android.util.Log;
 
+import com.google.android.avalon.model.messages.AvalonMessage;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
