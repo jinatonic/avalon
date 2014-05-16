@@ -98,7 +98,7 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         List<QuestExecutionResponse> execResponses = new ArrayList<QuestExecutionResponse>();
 
         ServerGameState gameState = mController.getCurrentGameState();
-        validateGameState(gameState, null, null, false, 0, 0, 0, false, null, propResponses, null, execResponses, false);
+        validateGameState(gameState, null, null, false, 0, 0, false, null, propResponses, null, execResponses, false);
 
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 7;
@@ -161,7 +161,7 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         PlayerInfo king = gameState.currentKing;
 
         // Check the outgoing messages and game state
-        validateGameState(gameState, king, null, false, 0, 0, 0, true, null, propResponses, null, execResponses, false);
+        validateGameState(gameState, king, null, false, 0, 0, true, null, propResponses, null, execResponses, false);
         validateOutgoingBroadcast(RoleAssignment.class);
         mMessages.clear();
 
@@ -175,7 +175,7 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
 
             // Check the outgoing messages and game state
             gameState = mController.getCurrentGameState();
-            validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses, false);
+            validateGameState(gameState, king, null, false, 0, i, false, proposal, propResponses, null, execResponses, false);
             validateOutgoingBroadcast(QuestProposal.class);
             // Check one QuestProposal for sanity
             assertEquals(proposal, mMessages.get(player0));
@@ -189,15 +189,15 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
                 propResponses.add(rsp);
 
                 if (j < gameState.players.size() - 1) {
-                    validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses, false);
+                    validateGameState(gameState, king, null, false, 0, i, false, proposal, propResponses, null, execResponses, false);
                 } else {
                     // Validate resulting state (should be waiting for a new proposal)
                     gameState = mController.getCurrentGameState();
                     king = validateKing(gameState, king);
                     if (i < 4) {
-                        validateGameState(gameState, king, null, false, 0, 0, i+1, true, null, propResponses, null, execResponses, false);
+                        validateGameState(gameState, king, null, false, 0, i+1, true, null, propResponses, null, execResponses, false);
                     } else {
-                        validateGameState(gameState, king, null, false, 1, 1, 0, true, null, propResponses, null, execResponses, false);
+                        validateGameState(gameState, king, null, false, 1, 0, true, null, propResponses, null, execResponses, false);
                         assertFalse(gameState.quests.get(0));
                     }
                 }
@@ -212,7 +212,7 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
 
         // Check the outgoing messages and game state
         gameState = mController.getCurrentGameState();
-        validateGameState(gameState, king, null, false, 1, 1, 0, false, proposal, propResponses, null, execResponses, false);
+        validateGameState(gameState, king, null, false, 1, 0, false, proposal, propResponses, null, execResponses, false);
         validateOutgoingBroadcast(QuestProposal.class);
         // Check one QuestProposal for sanity
         assertEquals(proposal, mMessages.get(player0));
@@ -227,41 +227,111 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         }
 
         // Validate outgoing messages and game state (should have progressed to quest execution)
-        validateGameState(gameState, king, null, false, 1, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
+        validateGameState(gameState, king, null, false, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
         assertEquals(3, mMessages.size());
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player2)).questNum);
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player4)).questNum);
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player6)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player2)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player4)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player6)).questNum);
         mMessages.clear();
 
         // Send out QuestExecutionResponse messages
         for (i = 0; i < proposal.questMembers.length; i++) {
             PlayerInfo player = proposal.questMembers[i];
-            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.questNum);
+            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.quests.size());
             mController.processAvalonMessage(rsp);
             execResponses.add(rsp);
 
             assertEquals(0, mMessages.size());
             if (i < proposal.questMembers.length - 1) {
-                validateGameState(gameState, king, null, false, 1, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
+                validateGameState(gameState, king, null, false, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
             } else {
                 // Validate resulting state (should be waiting for a new proposal)
                 gameState = mController.getCurrentGameState();
-                validateGameState(gameState, king, null, false, 2, 2, 0, true, null, propResponses, null, execResponses, false);
+                king = validateKing(gameState, king);
+                validateGameState(gameState, king, null, false, 2, 0, true, null, propResponses, null, execResponses, false);
                 assertTrue(gameState.quests.get(1));
+            }
+        }
+
+        // Quest #3 - 3 players go on
+        proposedPlayers = new PlayerInfo[] {player2, player4, player6};
+        proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        mController.processAvalonMessage(proposal);
+        propResponses.clear();
+
+        // Check the outgoing messages and game state
+        gameState = mController.getCurrentGameState();
+        validateGameState(gameState, king, null, false, 2, 0, false, proposal, propResponses, null, execResponses, false);
+        mMessages.clear();
+
+        // Fail it by 3 to 4 vote
+        i = 0;
+        for (PlayerInfo player : gameState.players) {
+            QuestProposalResponse rsp = new QuestProposalResponse(player, i++ % 2 != 0, proposal.propNum);
+            mController.processAvalonMessage(rsp);
+            propResponses.add(rsp);
+        }
+
+        king = validateKing(gameState, king);
+        validateGameState(gameState, king, null, false, 2, 1, true, null, propResponses, null, execResponses, false);
+        assertEquals(0, mMessages.size());
+
+        proposedPlayers = new PlayerInfo[] {player1, player5, player6};
+        proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        mController.processAvalonMessage(proposal);
+        propResponses.clear();
+
+        // Check the outgoing messages and game state
+        gameState = mController.getCurrentGameState();
+        validateGameState(gameState, king, null, false, 2, 1, false, proposal, propResponses, null, execResponses, false);
+        mMessages.clear();
+
+        // Pass it by 4 to 3 vote
+        i = 1;
+        for (PlayerInfo player : gameState.players) {
+            QuestProposalResponse rsp = new QuestProposalResponse(player, i++ % 2 != 0, proposal.propNum);
+            mController.processAvalonMessage(rsp);
+            propResponses.add(rsp);
+        }
+        // clear exec once we pass
+        execResponses.clear();
+
+        // Validate outgoing messages and game state (should have progressed to quest execution)
+        validateGameState(gameState, king, null, false, 2, 1, false, null, propResponses, new QuestExecution(0), execResponses, false);
+        assertEquals(3, mMessages.size());
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player1)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player5)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player6)).questNum);
+        mMessages.clear();
+
+        // Send out QuestExecutionResponse messages
+        for (i = 0; i < proposal.questMembers.length; i++) {
+            PlayerInfo player = proposal.questMembers[i];
+            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.quests.size());
+            mController.processAvalonMessage(rsp);
+            execResponses.add(rsp);
+
+            assertEquals(0, mMessages.size());
+            if (i < proposal.questMembers.length - 1) {
+                validateGameState(gameState, king, null, false, 2, 1, false, null, propResponses, new QuestExecution(0), execResponses, false);
+            } else {
+                // Validate resulting state (should be waiting for a new proposal)
+                gameState = mController.getCurrentGameState();
+                king = validateKing(gameState, king);
+                validateGameState(gameState, king, null, false, 3, 0, true, null, propResponses, null, execResponses, false);
+                assertTrue(gameState.quests.get(2));
             }
         }
     }
 
     private void validateGameState(ServerGameState gameState, PlayerInfo king, PlayerInfo lady,
-            boolean waitingForLady, int questNum, int questsSize, int currAttempts,
+            boolean waitingForLady, int questsSize, int currAttempts,
             boolean needQuestProposal, QuestProposal lastProp,
             List<QuestProposalResponse> lastPropRsps, QuestExecution lastExec,
             List<QuestExecutionResponse> lastExecRsps, boolean gameOver) {
         assertEquals(king, gameState.currentKing);
         assertEquals(lady, gameState.currentLady);
         assertEquals(waitingForLady, gameState.waitingForLady);
-        assertEquals(questNum, gameState.questNum);
         assertEquals(questsSize, gameState.quests.size());
         assertEquals(currAttempts, gameState.currentNumAttempts);
         assertEquals(needQuestProposal, gameState.needQuestProposal);

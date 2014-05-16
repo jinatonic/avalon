@@ -81,7 +81,6 @@ public class ServerGameStateController extends GameStateController {
         // Set some default game states
         mGameState.needQuestProposal = true;
         mGameState.currentNumAttempts = 0;
-        mGameState.questNum = 0;
         mGameState.currentKing = mGameState.assignments.king;
         mGameState.currentLady = mGameState.assignments.lady;
 
@@ -136,7 +135,7 @@ public class ServerGameStateController extends GameStateController {
             // since this SHOULD be enforced by the UI.
             QuestProposal proposal = (QuestProposal) msg;
             if (proposal.questMembers.length ==
-                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
+                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.quests.size()]) {
                 mGameState.setNewQuestProposal(proposal);
                 broadcastMessageToAllPlayers(msg);
             }
@@ -202,7 +201,7 @@ public class ServerGameStateController extends GameStateController {
 
                 // Check if we need more
                 if (mGameState.lastQuestExecutionResponses.size() ==
-                        mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
+                        mGameState.campaignInfo.numPeopleOnQuests[mGameState.quests.size()]) {
                     // Set quest state
                     int numFailed = 0;
                     for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
@@ -212,9 +211,10 @@ public class ServerGameStateController extends GameStateController {
                     }
 
                     boolean questPassed = numFailed < mGameState.campaignInfo.numPeopleNeedToFail[
-                            mGameState.questNum];
+                            mGameState.quests.size()];
 
                     addQuestResultAndCheckCompletion(questPassed);
+                    advanceKing();
 
                     // Reset execution so we know that we are not waiting for responses
                     mGameState.lastQuestExecution = null;
@@ -233,7 +233,6 @@ public class ServerGameStateController extends GameStateController {
 
     private void addQuestResultAndCheckCompletion(boolean passed) {
         mGameState.quests.add(passed);
-        mGameState.questNum++;
         mGameState.currentNumAttempts = 0;
         mGameState.lastQuestExecution = null;
 

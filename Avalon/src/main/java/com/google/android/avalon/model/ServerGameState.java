@@ -27,7 +27,6 @@ public class ServerGameState implements Serializable {
     public PlayerInfo currentLady;  // can be null
     public boolean waitingForLady;  // has priority over needQuestProposal for UI
 
-    public int questNum;    // 0 based
     public List<Boolean> quests = new LinkedList<Boolean>();
     public int currentNumAttempts;
     public boolean gameOver;
@@ -51,9 +50,12 @@ public class ServerGameState implements Serializable {
         needQuestProposal = false;
         lastQuestProposalResponses.clear();
         lastQuestProposal = proposal;
+        lastQuestExecution = null;
     }
 
     public void setNewQuestExec(QuestExecution exec) {
+        needQuestProposal = false;
+        lastQuestProposal = null;
         lastQuestExecutionResponses.clear();
         lastQuestExecution = exec;
     }
