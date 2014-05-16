@@ -137,9 +137,7 @@ public class ServerGameStateController extends GameStateController {
             QuestProposal proposal = (QuestProposal) msg;
             if (proposal.questMembers.length ==
                     mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
-                mGameState.needQuestProposal = false;
-                mGameState.lastQuestProposal = proposal;
-                mGameState.lastQuestProposalResponses.clear();
+                mGameState.setNewQuestProposal(proposal);
                 broadcastMessageToAllPlayers(msg);
             }
         }
@@ -169,24 +167,26 @@ public class ServerGameStateController extends GameStateController {
                     if (proposalPassed) {
                         // Send votes to proposed team
                         ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
+                        QuestExecution exec = new QuestExecution(mGameState.quests.size());
                         for (PlayerInfo member : mGameState.lastQuestProposal.questMembers) {
-                            wrapper.add(member, new QuestExecution(mGameState.quests.size()));
+                            wrapper.add(member, exec);
                         }
                         sendBulkMessages(wrapper);
+                        mGameState.setNewQuestExec(exec);
                     } else {
                         mGameState.currentNumAttempts++;
                         if (mGameState.currentNumAttempts > 4) {
                             // auto-fail quests after 5 proposal attempts
                             addQuestResultAndCheckCompletion(false);
-                        } else {
-                            advanceKing();
                         }
+                        advanceKing();
                     }
+
+                    // Reset quest proposal so we know that we are not waiting for responses
+                    mGameState.lastQuestProposal = null;
                 }
             }
         }
-
-        // QuestExecution
 
         // QuestExecutionResponse
         else if (msg instanceof QuestExecutionResponse && mGameState.lastQuestExecution != null) {
@@ -200,18 +200,25 @@ public class ServerGameStateController extends GameStateController {
                 }
                 mGameState.lastQuestExecutionResponses.add(rsp);
 
-                // Set quest state
-                int numFailed = 0;
-                for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
-                    if (!prev.pass) {
-                        numFailed++;
+                // Check if we need more
+                if (mGameState.lastQuestExecutionResponses.size() ==
+                        mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
+                    // Set quest state
+                    int numFailed = 0;
+                    for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
+                        if (!prev.pass) {
+                            numFailed++;
+                        }
                     }
+
+                    boolean questPassed = numFailed < mGameState.campaignInfo.numPeopleNeedToFail[
+                            mGameState.questNum];
+
+                    addQuestResultAndCheckCompletion(questPassed);
+
+                    // Reset execution so we know that we are not waiting for responses
+                    mGameState.lastQuestExecution = null;
                 }
-
-                boolean questPassed = numFailed < mGameState.campaignInfo.numPeopleNeedToFail[
-                        mGameState.questNum];
-
-                addQuestResultAndCheckCompletion(questPassed);
             }
         }
     }
@@ -226,6 +233,9 @@ public class ServerGameStateController extends GameStateController {
 
     private void addQuestResultAndCheckCompletion(boolean passed) {
         mGameState.quests.add(passed);
+        mGameState.questNum++;
+        mGameState.currentNumAttempts = 0;
+        mGameState.lastQuestExecution = null;
 
         // If only I can use a fold operation here.. cmon Java 8
         int numSuccess = 0;
@@ -236,10 +246,11 @@ public class ServerGameStateController extends GameStateController {
         }
         if (numSuccess >= 3 || mGameState.quests.size() - numSuccess >= 3) {
             broadcastMessageToAllPlayers(new GameOverMessage(numSuccess >= 3));
+            mGameState.gameOver = true;
             return;
         }
 
-        advanceKing();
+        mGameState.needQuestProposal = true;
         doLadyStuff();
     }
 

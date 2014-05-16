@@ -23,26 +23,38 @@ public class ServerGameState implements Serializable {
 
     // State variables
     public PlayerInfo currentKing;
-    public PlayerInfo currentLady;  // can be null
 
+    public PlayerInfo currentLady;  // can be null
     public boolean waitingForLady;  // has priority over needQuestProposal for UI
 
     public int questNum;    // 0 based
     public List<Boolean> quests = new LinkedList<Boolean>();
     public int currentNumAttempts;
+    public boolean gameOver;
 
     // Quest proposal approval
     public boolean needQuestProposal;
-    public QuestProposal lastQuestProposal;
+    public QuestProposal lastQuestProposal; // null if we are not waiting for response
     public List<QuestProposalResponse> lastQuestProposalResponses =
             new ArrayList<QuestProposalResponse>();
 
     // Quest pass/fail
-    public QuestExecution lastQuestExecution;
+    public QuestExecution lastQuestExecution;   // null if we are not waiting for response
     public List<QuestExecutionResponse> lastQuestExecutionResponses =
             new ArrayList<QuestExecutionResponse>();
 
     public int numPlayers() {
         return players.size();
+    }
+
+    public void setNewQuestProposal(QuestProposal proposal) {
+        needQuestProposal = false;
+        lastQuestProposalResponses.clear();
+        lastQuestProposal = proposal;
+    }
+
+    public void setNewQuestExec(QuestExecution exec) {
+        lastQuestExecutionResponses.clear();
+        lastQuestExecution = exec;
     }
 }
