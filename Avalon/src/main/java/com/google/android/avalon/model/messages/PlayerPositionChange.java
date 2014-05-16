@@ -5,10 +5,10 @@ package com.google.android.avalon.model.messages;
  */
 public class PlayerPositionChange extends AvalonMessage {
     public PlayerInfo player;
-    public boolean isInc;
+    public boolean isIncrement;
 
-    public PlayerPositionChange(PlayerInfo p, boolean i) {
+    public PlayerPositionChange(PlayerInfo p, boolean increment) {
         player = p;
-        isInc = i;
+        isIncrement = increment;
     }
 }

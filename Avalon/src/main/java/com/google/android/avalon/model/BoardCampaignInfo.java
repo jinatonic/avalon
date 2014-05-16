@@ -7,8 +7,8 @@ import com.google.android.avalon.rules.IllegalConfigurationException;
  */
 public class BoardCampaignInfo {
 
-    public int[] numPeopleOnQuests;
-    public int[] numPeopleNeedToFail;
+    public final int[] numPeopleOnQuests;
+    public final int[] numPeopleNeedToFail;
 
     public BoardCampaignInfo(int numPlayers) throws IllegalConfigurationException {
         switch (numPlayers) {
