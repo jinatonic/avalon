@@ -52,7 +52,7 @@ public class AssignmentFactory {
 
         Set<RoleAssignment> assignments = new HashSet<RoleAssignment>();
         for (PlayerInfo player: players) {
-            PlayerInfo[] seenBy = getSeenBy(playerToRole, player);
+            Set<PlayerInfo> seenBy = getSeenBy(playerToRole, player);
             assignments.add(new RoleAssignment(player, playerToRole.get(player), seenBy));
         }
 
@@ -74,7 +74,7 @@ public class AssignmentFactory {
                     String.format("Too few players. 5 required, only %d provided.",
                             mGameConfiguration.numPlayers));
         }
-        Collection<AvalonRole> specialEvil = getSpecialEvil();
+        Collection<AvalonRole> specialEvil = filterByAlignment(false);
         if (specialEvil.size() > mNumEvil) {
             String message = String.format(
                 "Too many special evil roles requested. A game with %d players, supports %d " +
@@ -88,42 +88,24 @@ public class AssignmentFactory {
         for (int i = rolesInPlay.size(); i < mNumEvil; i++) {
             rolesInPlay.add(AvalonRole.MINION);
         }
-        rolesInPlay.addAll(getSpecialGood());
+        rolesInPlay.addAll(filterByAlignment(true));
         for (int i = rolesInPlay.size(); i < mGameConfiguration.numPlayers; i++) {
             rolesInPlay.add(AvalonRole.LOYAL);
         }
         return rolesInPlay;
     }
 
-    private Collection<AvalonRole> getSpecialEvil() {
+    private Collection<AvalonRole> filterByAlignment(boolean matchGood) {
         Set<AvalonRole> result = new HashSet<AvalonRole>();
-        if (mGameConfiguration.includeAssassin) {
-            result.add(AvalonRole.ASSASSIN);
-        }
-        if (mGameConfiguration.includeMordred) {
-            result.add(AvalonRole.MORDRED);
-        }
-        if (mGameConfiguration.includeMorgana) {
-            result.add(AvalonRole.MORGANA);
-        }
-        if (mGameConfiguration.includeOberon) {
-            result.add(AvalonRole.OBERON);
+        for (AvalonRole r: mGameConfiguration.specialRoles) {
+            if (r.isGood == matchGood) {
+                result.add(r);
+            }
         }
         return result;
     }
 
-    private Collection<AvalonRole> getSpecialGood() {
-        Set<AvalonRole> result = new HashSet<AvalonRole>();
-        if (mGameConfiguration.includeMerlin) {
-            result.add(AvalonRole.MERLIN);
-        }
-        if (mGameConfiguration.includePercival) {
-            result.add(AvalonRole.PERCIVAL);
-        }
-        return result;
-    }
-
-    private PlayerInfo[] getSeenBy(Map<PlayerInfo, AvalonRole> playerToRole, PlayerInfo player) {
+    private Set<PlayerInfo> getSeenBy(Map<PlayerInfo, AvalonRole> playerToRole, PlayerInfo player) {
         Set<PlayerInfo> seenBy = new HashSet<PlayerInfo>();
         switch(playerToRole.get(player)) {
             case MERLIN:
@@ -155,7 +137,8 @@ public class AssignmentFactory {
                 break;
             // LOYAL and OBERON see nothing.
         }
-        PlayerInfo[] result = new PlayerInfo[seenBy.size()];
-        return seenBy.toArray(result);
+        return seenBy;
+        //PlayerInfo[] result = new PlayerInfo[seenBy.size()];
+        //return seenBy.toArray(result);
     }
 }

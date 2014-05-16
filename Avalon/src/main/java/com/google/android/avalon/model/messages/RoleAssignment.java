@@ -13,9 +13,9 @@ public class RoleAssignment extends AvalonMessage {
 
     public final PlayerInfo player;
     public final AvalonRole role;
-    public final PlayerInfo[] seenPlayers;
+    public final Set<PlayerInfo> seenPlayers;
 
-    public RoleAssignment(PlayerInfo player, AvalonRole role, PlayerInfo[] seenPlayers) {
+    public RoleAssignment(PlayerInfo player, AvalonRole role, Set<PlayerInfo> seenPlayers) {
         this.player = player;
         this.role = role;
         this.seenPlayers = seenPlayers;

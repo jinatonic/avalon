@@ -3,6 +3,7 @@ package com.google.android.avalon.controllers;
 import android.content.Context;
 import android.util.Log;
 
+import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.BoardCampaignInfo;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
@@ -21,6 +22,8 @@ import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 import com.google.android.avalon.rules.AssignmentFactory;
 import com.google.android.avalon.rules.IllegalConfigurationException;
 
+import java.util.Arrays;
+
 /**
  * Created by jinyan on 5/14/14.
  *
@@ -30,10 +33,27 @@ import com.google.android.avalon.rules.IllegalConfigurationException;
 public class ServerGameStateController extends GameStateController {
 
     // Initial configurations
-    private GameConfiguration mConfig;
+    private GameConfiguration mConfig = getFullConfig();
+
+    private GameConfiguration getFullConfig() {
+        GameConfiguration cfg = new GameConfiguration();
+        cfg.specialRoles.addAll(Arrays.asList(AvalonRole.MERLIN, AvalonRole.MORGANA, AvalonRole.MORDRED, AvalonRole.OBERON, AvalonRole.PERCIVAL, AvalonRole.ASSASSIN));
+        cfg.numPlayers = 7;
+        return cfg;
+    }
 
     // Game state
-    private ServerGameState mGameState = new ServerGameState();
+    private ServerGameState mGameState = getTestGameState();
+
+    private ServerGameState getTestGameState() {
+        ServerGameState state = new ServerGameState();
+        state.players.add(new PlayerInfo("Bob"));
+        PlayerInfo pi = new PlayerInfo("Sam");
+        pi.participating = true;
+        state.players.add(pi);
+        state.players.add(new PlayerInfo("Bill"));
+        return state;
+    }
 
     // private for singleton
     private static ServerGameStateController sServerGameStateController;
@@ -46,6 +66,10 @@ public class ServerGameStateController extends GameStateController {
             sServerGameStateController = new ServerGameStateController(context);
         }
         return sServerGameStateController;
+    }
+
+    public GameConfiguration getConfig() {
+        return mConfig;
     }
 
     public void setConfig(GameConfiguration config) {

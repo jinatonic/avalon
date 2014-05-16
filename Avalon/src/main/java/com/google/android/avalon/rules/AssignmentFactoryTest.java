@@ -31,9 +31,9 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetRolesInPlayShouldFillNormalRoles() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 8;
-        config.includeMerlin = true;
-        config.includeAssassin = true;
-        config.includeMordred = true;
+        config.specialRoles.add(MERLIN);
+        config.specialRoles.add(ASSASSIN);
+        config.specialRoles.add(MORDRED);
 
         // Expect 3 evil, 5 good. 1 special role in each, the other normal.
         List<AvalonRole> expected = Arrays.asList(
@@ -45,12 +45,12 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetRolesInPlayWithAllSpecialsIncluded() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 10;
-        config.includeMerlin = true;
-        config.includePercival = true;
-        config.includeAssassin = true;
-        config.includeMordred = true;
-        config.includeOberon = true;
-        config.includeMorgana = true;
+        config.specialRoles.add(MERLIN);
+        config.specialRoles.add(PERCIVAL);
+        config.specialRoles.add(ASSASSIN);
+        config.specialRoles.add(MORDRED);
+        config.specialRoles.add(OBERON);
+        config.specialRoles.add(MORGANA);
 
         List<AvalonRole> expected = Arrays.asList(
                 MORDRED, MORGANA, OBERON, ASSASSIN,
@@ -61,7 +61,7 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetRolesInPlayForNumPlayersDivBy3() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 6;
-        config.includeMerlin = true;
+        config.specialRoles.add(MERLIN);
 
         List<AvalonRole> expected = Arrays.asList(
                 MINION, MINION,
@@ -72,10 +72,10 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetRolesInPlayShouldFailIFTooManySpecialEvil() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 5;
-        config.includeMerlin = true;
-        config.includeAssassin = true;
-        config.includeMordred = true;
-        config.includeOberon = true;
+        config.specialRoles.add(MERLIN);
+        config.specialRoles.add(ASSASSIN);
+        config.specialRoles.add(MORDRED);
+        config.specialRoles.add(OBERON);
 
         try {
             new AssignmentFactory(config).getRolesInPlay();
@@ -103,12 +103,12 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetAssignmentsShouldHaveCorrectVisibilityInFullGame() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 10;
-        config.includeMerlin = true;
-        config.includePercival = true;
-        config.includeAssassin = true;
-        config.includeMordred = true;
-        config.includeOberon = true;
-        config.includeMorgana = true;
+        config.specialRoles.add(MERLIN);
+        config.specialRoles.add(PERCIVAL);
+        config.specialRoles.add(ASSASSIN);
+        config.specialRoles.add(MORDRED);
+        config.specialRoles.add(OBERON);
+        config.specialRoles.add(MORGANA);
 
         InitialAssignments ia = new AssignmentFactory(config).getAssignments(getTestPlayers(10));
 
@@ -135,8 +135,8 @@ public class AssignmentFactoryTest extends InstrumentationTestCase {
     public void testGetAssignmentsShouldHaveCorrectVisibilityInSmallGame() {
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 5;
-        config.includeMerlin = true;
-        config.includeAssassin = true;
+        config.specialRoles.add(MERLIN);
+        config.specialRoles.add(ASSASSIN);
 
         InitialAssignments ia = new AssignmentFactory(config).getAssignments(getTestPlayers(5));
 

@@ -66,14 +66,14 @@ public class ClientFragment extends Fragment {
     private void showRoleAssignment() {
         mRoleAssignmentText.setText(mRoleAssignment.role.name());
 
-        if (mRoleAssignment.seenPlayers.length == 0) {
+        if (mRoleAssignment.seenPlayers.size() == 0) {
             mSeenPlayersLabel.setVisibility(View.INVISIBLE);
         } else {
             StringBuilder seenPlayers = new StringBuilder();
             int i = 0;
             for (PlayerInfo player: mRoleAssignment.seenPlayers) {
                 seenPlayers.append(player.name);
-                if (i++ < mRoleAssignment.seenPlayers.length - 1) {
+                if (i++ < mRoleAssignment.seenPlayers.size() - 1) {
                     seenPlayers.append(", ");
                 }
             }

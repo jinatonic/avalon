@@ -2,6 +2,9 @@ package com.google.android.avalon.model;
 
 import com.google.android.avalon.model.messages.AvalonMessage;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by mikewallstedt on 5/13/14.
  */
@@ -10,10 +13,5 @@ public class GameConfiguration extends AvalonMessage {
 
     public int numPlayers;
     public boolean enableLadyOfTheLake;
-    public boolean includeAssassin;
-    public boolean includeMerlin;
-    public boolean includeMorgana;
-    public boolean includeMordred;
-    public boolean includeOberon;
-    public boolean includePercival;
+    public Set<AvalonRole> specialRoles = new HashSet<AvalonRole>();
 }

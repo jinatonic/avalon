@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
 import com.google.android.avalon.controllers.ServerGameStateController;
+import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
 import com.google.android.avalon.model.ServerGameState;
@@ -38,63 +39,59 @@ import static com.google.android.avalon.rules.AssignmentFactory.MIN_PLAYERS;
  */
 public class SetupServerFragment extends Fragment {
 
-    private ServerGameStateController mServerGameStateController;
-
     // UI state variables and pointers
-    private TextView mStatusTextView;
     private Spinner mNumPlayers;
     private ListView mSelectPlayers;
     private Button mStartGame;
 
-    private GameConfiguration mGameConfig = new GameConfiguration();
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        mServerGameStateController = ServerGameStateController.get(getActivity());
-
         View v = inflater.inflate(R.layout.server_setup_fragment, parent, false);
-        mStatusTextView = (TextView) v.findViewById(R.id.server_status_text);
 
-        // TODO restore UI state from mGameConfig (e.g. on rotation)
         setupNumPlayers(v);
         setupSelectPlayers(v);
         setupRoleSelections(v);
         setupStartButton(v);
-        update();
 
-        Log.i(AvalonActivity.TAG, "onCreate complete.");
         return v;
     }
 
     public void update() {
-        ServerGameState gameState = mServerGameStateController.getCurrentGameState();
-        // TODO
+        // TODO force UI update (model changed)
     }
 
     private void setupNumPlayers(View v) {
+        // Populate options.
         List<NumPlayersChoice> options = new ArrayList<NumPlayersChoice>();
         options.add(new NumPlayersChoice("Num Players", 0));
         for (int i = MIN_PLAYERS; i <= MAX_PLAYERS; i++) {
             options.add(new NumPlayersChoice("" + i, i));
         }
-
-        final ArrayAdapter adapter = new ArrayAdapter(
+        final ArrayAdapter<NumPlayersChoice> adapter = new ArrayAdapter<NumPlayersChoice>(
                 getActivity(), android.R.layout.simple_spinner_item, options);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mNumPlayers = (Spinner) v.findViewById(R.id.num_players_widget);
         mNumPlayers.setAdapter(adapter);
 
+        // Set state from model.
+        for (int i = 0; i < adapter.getCount(); i++) {
+            if (getConfig().numPlayers == adapter.getItem(i).value) {
+                mNumPlayers.setSelection(i);
+            }
+        }
+
+        // Set logic to respond to user selections.
         mNumPlayers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 updateStartButton();
-                mGameConfig.numPlayers = ((NumPlayersChoice)adapter.getItem(i)).value;
+                getConfig().numPlayers = adapter.getItem(i).value;
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 mStartGame.setEnabled(false);
-                mGameConfig.numPlayers = 0;
+                getConfig().numPlayers = 0;
             }
         });
     }
@@ -121,50 +118,26 @@ public class SetupServerFragment extends Fragment {
 
     // TODO add element for lady of the lake.
     private void setupRoleSelections(View v) {
-        // TODO refactor GameConfiguration to store set of AvalonRoles instead of having
-        // separate booleans. We could get much better code reuse here.
-        ((CheckBox)v.findViewById(R.id.merlin_selected_widget)).setOnCheckedChangeListener(
+        setupRoleSelection(v, AvalonRole.MERLIN, R.id.merlin_selected_widget);
+        setupRoleSelection(v, AvalonRole.PERCIVAL, R.id.percival_selected_widget);
+        setupRoleSelection(v, AvalonRole.ASSASSIN, R.id.assassin_selected_widget);
+        setupRoleSelection(v, AvalonRole.MORDRED, R.id.mordred_selected_widget);
+        setupRoleSelection(v, AvalonRole.MORGANA, R.id.morgana_selected_widget);
+        setupRoleSelection(v, AvalonRole.OBERON, R.id.oberon_selected_widget);
+    }
+
+    private void setupRoleSelection(View v, final AvalonRole role, int resourceId) {
+        CheckBox checkBox = (CheckBox) v.findViewById(resourceId);
+        checkBox.setChecked(getConfig().specialRoles.contains(role));
+        checkBox.setOnCheckedChangeListener(
                 new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includeMerlin = checked;
-                    }
-                }
-        );
-        ((CheckBox)v.findViewById(R.id.assassin_selected_widget)).setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includeAssassin = checked;
-                    }
-                }
-        );
-        ((CheckBox)v.findViewById(R.id.percival_selected_widget)).setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includePercival = checked;
-                    }
-                });
-        ((CheckBox)v.findViewById(R.id.mordred_selected_widget)).setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includeMordred = checked;
-                    }
-                });
-        ((CheckBox)v.findViewById(R.id.mordred_selected_widget)).setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includeMorgana = checked;
-                    }
-                });
-        ((CheckBox)v.findViewById(R.id.oberon_selected_widget)).setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                        mGameConfig.includeOberon = checked;
+                        if (checked) {
+                            getConfig().specialRoles.add(role);
+                        } else {
+                            getConfig().specialRoles.remove(role);
+                        }
                     }
                 }
         );
@@ -181,13 +154,12 @@ public class SetupServerFragment extends Fragment {
         });
     }
 
-    // TODO get these from the clients.
+    private GameConfiguration getConfig() {
+        return ServerGameStateController.get(getActivity()).getConfig();
+    }
+
     private List<PlayerInfo> getPlayers() {
-        List<PlayerInfo> result = new ArrayList<PlayerInfo>();
-        for (int i = 1; i <= 8; i++) {
-            result.add(new PlayerInfo("Player " + i));
-        }
-        return result;
+        return ServerGameStateController.get(getActivity()).getCurrentGameState().players;
     }
 
     private class PlayerAdapter extends ArrayAdapter<PlayerInfo> {
@@ -206,11 +178,15 @@ public class SetupServerFragment extends Fragment {
 
             ((TextView)convertView.findViewById(R.id.player_name_widget)).setText(pi.name);
             CheckBox playerSelected = (CheckBox) convertView.findViewById(R.id.player_selected_widget);
+            Log.i("MWALL DEBUG", "Player " + pi.name + " is participating? " + pi.participating);
             playerSelected.setChecked(pi.participating);
 
             playerSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                    Log.i("MWALL DEBUG", "SET player " + pi.name + " to participating " + checked);
+                    Log.i("MWALL DEBUG", "BUTTON TEXT: " + compoundButton.getText() + " PI NAME: " + pi.name);
+                    compoundButton.setText(pi.name);
                     pi.participating = checked;
                     updateStartButton();
                 }
@@ -242,7 +218,7 @@ public class SetupServerFragment extends Fragment {
 
     private void startGame() {
         try {
-            InitialAssignments assignments = new AssignmentFactory(mGameConfig)
+            InitialAssignments assignments = new AssignmentFactory(getConfig())
                     .getAssignments(getParticipatingPlayers());
 
             // TODO remove this (of course)
