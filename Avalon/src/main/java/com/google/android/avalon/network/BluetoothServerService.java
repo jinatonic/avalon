@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
-import com.google.android.avalon.model.MessageParser;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;

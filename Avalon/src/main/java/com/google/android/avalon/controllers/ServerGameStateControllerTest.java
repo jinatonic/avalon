@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.test.AndroidTestCase;
+import android.test.mock.MockContext;
 import android.util.Log;
 
 import com.google.android.avalon.model.GameConfiguration;
@@ -33,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ServerGameStateControllerTest extends AndroidTestCase {
 
+    Context mContext;
     ServerGameStateController mController;
     BroadcastReceiver mReceiver;
 
@@ -51,35 +53,33 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
             player0, player1, player2, player3, player4, player5, player6
     });
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mController = ServerGameStateController.get(getContext());
-        mMessages = new ConcurrentHashMap<PlayerInfo, AvalonMessage>();
-
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                ToBtMessageWrapper wrapper = (ToBtMessageWrapper) intent.getSerializableExtra(
-                        ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY);
-                Log.i("Testing", System.currentTimeMillis() + " Message received: " + wrapper);
-                for (int i = 0; i < wrapper.size(); i++) {
-                    if (mMessages.containsKey(wrapper.player.get(i))) {
-                        fail("Duplicate message was sent to the same receiver!");
-                    } else {
-                        mMessages.put(wrapper.player.get(i), wrapper.message.get(i));
-                    }
+    private class MyMockContext extends MockContext {
+        @Override
+        public void sendBroadcast(Intent intent) {
+            ToBtMessageWrapper wrapper = (ToBtMessageWrapper) intent.getSerializableExtra(
+                    ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY);
+            Log.i("Testing", System.currentTimeMillis() + " Message received: " + wrapper);
+            for (int i = 0; i < wrapper.size(); i++) {
+                if (mMessages.containsKey(wrapper.player.get(i))) {
+                    fail("Duplicate message was sent to the same receiver!");
+                } else {
+                    mMessages.put(wrapper.player.get(i), wrapper.message.get(i));
                 }
             }
-        };
-        IntentFilter filter = new IntentFilter(ServiceMessageProtocol.TO_BT_SERVICE_INTENT);
-        getContext().registerReceiver(mReceiver, filter);
+        }
+
+        @Override
+        public Context getApplicationContext() {
+            return this;
+        }
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        getContext().unregisterReceiver(mReceiver);
+    protected void setUp() throws Exception {
+        super.setUp();
+        mContext = new MyMockContext();
+        mController = ServerGameStateController.get(mContext);
+        mMessages = new ConcurrentHashMap<PlayerInfo, AvalonMessage>();
     }
 
     /**
@@ -167,17 +167,82 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         mMessages.clear();
 
         // FIRST QUEST - 2 players go on the quest
+        // Fail all 5 proposals
+        for (int i = 0; i < 5; i++) {
+            PlayerInfo[] proposedPlayers = new PlayerInfo[] { player4, player1 };
+            QuestProposal proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+            mController.processAvalonMessage(proposal);
+            propResponses.clear();
 
-        // Proposal 1 (index 0)
-        PlayerInfo[] proposedPlayers = new PlayerInfo[] { player0, player1 };
+            // Check the outgoing messages and game state
+            gameState = mController.getCurrentGameState();
+            validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses);
+            validateOutgoingBroadcast(QuestProposal.class);
+            // Check one QuestProposal for sanity
+            assertEquals(proposal, mMessages.get(player0));
+            mMessages.clear();
+
+            // Let's fail it
+            for (PlayerInfo player : gameState.players) {
+                QuestProposalResponse rsp = new QuestProposalResponse(player, false, proposal.propNum);
+                mController.processAvalonMessage(rsp);
+                propResponses.add(rsp);
+
+                validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses);
+            }
+
+            // Validate resulting state (should be waiting for a new proposal)
+            gameState = mController.getCurrentGameState();
+            king = validateKing(gameState, king);
+            if (i < 4) {
+                validateGameState(gameState, king, null, false, 0, 0, i+1, true, proposal, propResponses, null, execResponses);
+            } else {
+                validateGameState(gameState, king, null, false, 1, 1, 0, true, proposal, propResponses, null, execResponses);
+                assertFalse(gameState.quests.get(0));
+            }
+        }
+
+        // Quest #2 - 3 players go on
+        PlayerInfo[] proposedPlayers = new PlayerInfo[] {player2, player4, player6};
         QuestProposal proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
         mController.processAvalonMessage(proposal);
+        propResponses.clear();
 
         // Check the outgoing messages and game state
-        validateGameState(gameState, king, null, false, 0, 0, 0, false, proposal, propResponses, null, execResponses);
+        gameState = mController.getCurrentGameState();
+        validateGameState(gameState, king, null, false, 1, 1, 0, false, proposal, propResponses, null, execResponses);
         validateOutgoingBroadcast(QuestProposal.class);
         // Check one QuestProposal for sanity
         assertEquals(proposal, mMessages.get(player0));
+        mMessages.clear();
+
+        // Pass it (barely, should have 2 fails)
+        int i = 0;
+        for (PlayerInfo player : gameState.players) {
+            QuestProposalResponse rsp = new QuestProposalResponse(player, i++ % 3 != 0, proposal.propNum);
+            mController.processAvalonMessage(rsp);
+            propResponses.add(rsp);
+        }
+
+        // Validate outgoing messages and game state
+        validateGameState(gameState, king, null, false, 1, 1, 0, false, proposal, propResponses, new QuestExecution(0), execResponses);
+        validateOutgoingBroadcast(QuestExecution.class);
+        mMessages.clear();
+
+        // Send out QuestExecutionResponse messages
+        for (PlayerInfo player : proposal.questMembers) {
+            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.questNum);
+            mController.processAvalonMessage(rsp);
+            execResponses.add(rsp);
+
+            validateGameState(gameState, king, null, false, 1, 1, 0, false, proposal, propResponses, new QuestExecution(0), execResponses);
+        }
+
+        // Validate resulting state (should be waiting for a new proposal)
+        gameState = mController.getCurrentGameState();
+        king = validateKing(gameState, king);
+        validateGameState(gameState, king, null, false, 2, 2, 0, true, proposal, propResponses, new QuestExecution(0), execResponses);
+        assertTrue(gameState.quests.get(1));
     }
 
     private void validateGameState(ServerGameState gameState, PlayerInfo king, PlayerInfo lady,
@@ -199,7 +264,8 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         assertTrue(new HashSet<QuestProposalResponse>(lastPropRsps)
                 .containsAll(gameState.lastQuestProposalResponses));
 
-        assertEquals(lastExec, gameState.lastQuestExecution);
+        // Can't really verify QuestExecution object itself
+        assertEquals(lastExec != null, gameState.lastQuestExecution != null);
         assertEquals(lastExecRsps.size(), gameState.lastQuestExecutionResponses.size());
         // For lists, we don't care about ordering
         assertTrue(new HashSet<QuestExecutionResponse>(lastExecRsps)
@@ -222,5 +288,11 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         assertEquals(expectedClass, mMessages.get(player5).getClass());
         assertTrue(mMessages.containsKey(player6));
         assertEquals(expectedClass, mMessages.get(player6).getClass());
+    }
+
+    private PlayerInfo validateKing(ServerGameState gameState, PlayerInfo currentKing) {
+        assertEquals(gameState.players.indexOf(gameState.currentKing),
+                gameState.players.indexOf(currentKing) + 1 % gameState.players.size());
+        return gameState.currentKing;
     }
 }
