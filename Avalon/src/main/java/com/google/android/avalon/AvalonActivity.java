@@ -115,6 +115,26 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (mIsServer) {
+            mServerGameStateController.isForeground(true);
+        } else {
+            mClientGameStateController.isForeground(true);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mIsServer) {
+            mServerGameStateController.isForeground(false);
+        } else {
+            mClientGameStateController.isForeground(false);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mReceiver);

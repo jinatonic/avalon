@@ -46,6 +46,10 @@ public class ServerGameState implements Serializable {
         return players.size();
     }
 
+    public boolean started() {
+        return campaignInfo != null;
+    }
+
     public void setNewQuestProposal(QuestProposal proposal) {
         needQuestProposal = false;
         lastQuestProposalResponses.clear();

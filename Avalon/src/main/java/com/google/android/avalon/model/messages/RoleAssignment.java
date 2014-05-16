@@ -23,6 +23,7 @@ public class RoleAssignment extends AvalonMessage {
 
     @Override
     public String toString() {
-        return "Role: " + player + " - " + role + " - " + seenPlayers;
+        return "[msg role for " + player + " - " + role + " - " + playerArrayToString(seenPlayers)
+                + "]";
     }
 }

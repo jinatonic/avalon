@@ -12,6 +12,6 @@ public class PlayerDisconnected extends AvalonMessage {
 
     @Override
     public String toString() {
-        return info + " disconnected";
+        return "[msg " + info.name + " disconnected]";
     }
 }

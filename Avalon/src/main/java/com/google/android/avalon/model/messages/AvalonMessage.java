@@ -25,4 +25,15 @@ public abstract class AvalonMessage implements Serializable {
     public int hashCode() {
         return this.uuid.hashCode();
     }
+
+    protected String playerArrayToString(PlayerInfo[] infos) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for (PlayerInfo info : infos) {
+            builder.append(info.name);
+            builder.append(",");
+        }
+        builder.append("]");
+        return builder.toString();
+    }
 }

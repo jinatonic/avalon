@@ -18,6 +18,7 @@ public class QuestProposal extends AvalonMessage {
 
     @Override
     public String toString() {
-        return "Proposal by " + proposer + ": " + questMembers + " for " + propNum;
+        return "[msg prop by " + proposer.name + ": " + playerArrayToString(questMembers) +
+                " for " + propNum + "]";
     }
 }

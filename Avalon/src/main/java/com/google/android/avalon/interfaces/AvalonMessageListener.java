@@ -6,5 +6,8 @@ import com.google.android.avalon.model.messages.AvalonMessage;
  * Created by jinyan on 5/14/14.
  */
 public interface AvalonMessageListener {
-    public void processAvalonMessage(AvalonMessage msg);
+    /**
+     * @return true on success (valid message), false otherwise
+     */
+    public boolean processAvalonMessage(AvalonMessage msg);
 }

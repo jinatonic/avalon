@@ -30,11 +30,13 @@ public class ClientGameStateController extends GameStateController {
     }
 
     @Override
-    public void processAvalonMessage(AvalonMessage msg) {
+    public boolean processAvalonMessage(AvalonMessage msg) {
         // TODO: finish
         if (msg instanceof RoleAssignment) {
             mStarted = true;
             Log.i(TAG, "Game starting, role: " + msg);
         }
+
+        return true;
     }
 }

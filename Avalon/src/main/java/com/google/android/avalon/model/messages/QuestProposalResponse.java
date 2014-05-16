@@ -18,6 +18,6 @@ public class QuestProposalResponse extends AvalonMessage {
 
     @Override
     public String toString() {
-        return player + " voted " + approve + " for " + propNum;
+        return "[msg propRsp from " + player.name + " voted " + approve + " for " + propNum + "]";
     }
 }

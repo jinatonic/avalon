@@ -1,9 +1,7 @@
 package com.google.android.avalon.controllers;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 import android.util.Log;
@@ -35,11 +33,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerGameStateControllerTest extends AndroidTestCase {
 
     Context mContext;
+    Context realContext;
     ServerGameStateController mController;
-    BroadcastReceiver mReceiver;
 
     // Note that mMessages should be cleared after every event
     Map<PlayerInfo, AvalonMessage> mMessages;
+    int numToasts;
 
     // Player pointers
     PlayerInfo player0 = new PlayerInfo("Player0");
@@ -72,14 +71,28 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         public Context getApplicationContext() {
             return this;
         }
+
+        // these methods are here to support capturing Toast.makeText(...).show()
+        @Override
+        public String getPackageName() {
+            return realContext.getPackageName();
+        }
+        @Override
+        public Object getSystemService(String name) {
+            numToasts++;
+            return realContext.getSystemService(name);
+        }
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mContext = new MyMockContext();
+        realContext = getContext();
         mController = ServerGameStateController.get(mContext);
+
         mMessages = new ConcurrentHashMap<PlayerInfo, AvalonMessage>();
+        numToasts = 0;
     }
 
     /**
