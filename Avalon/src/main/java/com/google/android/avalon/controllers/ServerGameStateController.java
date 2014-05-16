@@ -21,8 +21,6 @@ import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 import com.google.android.avalon.rules.AssignmentFactory;
 import com.google.android.avalon.rules.IllegalConfigurationException;
 
-import java.util.Set;
-
 /**
  * Created by jinyan on 5/14/14.
  *
@@ -118,7 +116,7 @@ public class ServerGameStateController extends GameStateController {
             PlayerPositionChange pos = (PlayerPositionChange) msg;
             if (mGameState.players.contains(pos.player)) {
                 int lastPos = mGameState.players.indexOf(pos.player);
-                int newPos = (pos.isInc) ? inc(lastPos) : dec(lastPos);
+                int newPos = (pos.isIncrement) ? inc(lastPos) : dec(lastPos);
                 mGameState.players.remove(lastPos);
                 mGameState.players.add(newPos, pos.player);
             }
@@ -126,6 +124,7 @@ public class ServerGameStateController extends GameStateController {
 
         // PlayerDisconnected, do reverse of PlayerInfo
         // TODO: maybe add support to pause game?
+        // TODO: replace this feature with an explicit command to remove the player?
         else if (msg instanceof PlayerDisconnected) {
             mGameState.players.remove(((PlayerDisconnected) msg).info);
         }
@@ -140,6 +139,8 @@ public class ServerGameStateController extends GameStateController {
                 mGameState.setNewQuestProposal(proposal);
                 broadcastMessageToAllPlayers(msg);
             }
+            // TODO: For this and similar cases below, what is the client expected to do?
+            // (i.e. do we need to send an explicit notification that the request was invalid?)
         }
 
         // QuestProposalResponse, record it. Only advance once all player's responses are received.
@@ -177,9 +178,10 @@ public class ServerGameStateController extends GameStateController {
                         mGameState.currentNumAttempts++;
                         if (mGameState.currentNumAttempts > 4) {
                             // auto-fail quests after 5 proposal attempts
+                            // TODO this should be auto-game over.
                             addQuestResultAndCheckCompletion(false);
                         }
-                        advanceKing();
+                        advanceKing();  // TODO shouldn't this also be done if the proposal passed?
                     }
 
                     // Reset quest proposal so we know that we are not waiting for responses
@@ -245,6 +247,7 @@ public class ServerGameStateController extends GameStateController {
             }
         }
         if (numSuccess >= 3 || mGameState.quests.size() - numSuccess >= 3) {
+            // TODO if numSuccess > 3, handle assassination attempt.
             broadcastMessageToAllPlayers(new GameOverMessage(numSuccess >= 3));
             mGameState.gameOver = true;
             return;
@@ -257,6 +260,7 @@ public class ServerGameStateController extends GameStateController {
     private void advanceKing() {
         int currKingIndex = mGameState.players.indexOf(mGameState.currentKing);
         mGameState.currentKing = mGameState.players.get(inc(currKingIndex));
+        // TODO this is a smell, since the method name implies only the king state should be affected.
         mGameState.needQuestProposal = true;
     }
 
