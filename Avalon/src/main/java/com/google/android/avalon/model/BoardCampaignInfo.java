@@ -19,6 +19,7 @@ public class BoardCampaignInfo {
             case 6:
                 numPeopleOnQuests = new int[] {2, 3, 4, 3, 4};
                 numPeopleNeedToFail = new int[] {1, 1, 1, 1, 1};
+                break;
             case 7:
                 numPeopleOnQuests = new int[] {2, 3, 3, 4, 4};
                 numPeopleNeedToFail = new int[] {1, 1, 1, 2, 1};
