@@ -30,6 +30,7 @@ public class ServerGameState implements Serializable {
     public List<Boolean> quests = new LinkedList<Boolean>();
     public int currentNumAttempts;
     public boolean gameOver;
+    public boolean goodWon; // shouldn't be checked unless gameOver = true
 
     // Quest proposal approval
     public boolean needQuestProposal;
@@ -48,6 +49,10 @@ public class ServerGameState implements Serializable {
 
     public boolean started() {
         return campaignInfo != null;
+    }
+
+    public int currQuestIndex() {
+        return quests.size();
     }
 
     public void setNewQuestProposal(QuestProposal proposal) {
