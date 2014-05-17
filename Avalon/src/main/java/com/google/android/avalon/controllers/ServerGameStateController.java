@@ -60,7 +60,6 @@ public class ServerGameStateController extends GameStateController {
         return mGameState;
     }
 
-    @Override
     public boolean started() {
         return mGameState.started();
     }
@@ -242,7 +241,7 @@ public class ServerGameStateController extends GameStateController {
                         // auto-game over if we fail 5 proposals
                         gameOver(false);
                     } else {
-                        advanceKingAndRequestProposal();  // TODO shouldn't this also be done if the proposal passed?
+                        advanceKingAndRequestProposal();
                     }
                 }
 

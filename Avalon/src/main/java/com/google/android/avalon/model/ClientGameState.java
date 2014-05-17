@@ -14,6 +14,7 @@ import java.io.Serializable;
 public class ClientGameState implements Serializable {
     public PlayerInfo player;
     public RoleAssignment assignment;
+    public boolean started;
 
     public QuestProposal proposal;     // null if we are not waiting for user input
     public QuestExecution execution;   // null if we are not waiting for user input
@@ -24,6 +25,6 @@ public class ClientGameState implements Serializable {
     public boolean goodWon;     // shouldn't be checked unless gameOver = true
 
     public boolean started() {
-        return assignment != null;
+        return started;
     }
 }

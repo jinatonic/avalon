@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.ClientGameState;
+import com.google.android.avalon.model.messages.ClientSetupDoneMessage;
 import com.google.android.avalon.model.messages.GameOverMessage;
 import com.google.android.avalon.model.messages.LadyResponse;
 import com.google.android.avalon.model.messages.PlayerInfo;
@@ -39,7 +40,6 @@ public class ClientGameStateController extends GameStateController {
         return mGameState;
     }
 
-    @Override
     public boolean started() {
         return mGameState.started();
     }
@@ -68,6 +68,15 @@ public class ClientGameStateController extends GameStateController {
             }
 
             mGameState.assignment = (RoleAssignment) msg;
+        }
+
+        // ClientSetupDone from UI
+        else if (msg instanceof ClientSetupDoneMessage) {
+            if (mGameState.started) {
+                return showWarningToast(msg);
+            }
+
+            mGameState.started = true;
         }
 
         // GameOverMessage

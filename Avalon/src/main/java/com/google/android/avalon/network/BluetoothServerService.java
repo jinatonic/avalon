@@ -27,8 +27,6 @@ public class BluetoothServerService extends BluetoothService {
 
     public static final String NUM_PLAYERS_KEY = "num_players_key";
 
-    private ServerGameStateController mServerGameStateController;
-
     private int mNumPlayers;
     private Map<PlayerInfo, BluetoothSocket> mPlayerSocketMap =
             new HashMap<PlayerInfo, BluetoothSocket>();
@@ -40,8 +38,7 @@ public class BluetoothServerService extends BluetoothService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BluetoothServerService starting");
-        mServerGameStateController = ServerGameStateController.get(this);
-        mMessageListener = mServerGameStateController;
+        mController = ServerGameStateController.get(this);
 
         int result = super.onStartCommand(intent, flags, startId);
 

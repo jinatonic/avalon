@@ -11,7 +11,6 @@
     <string name="role_label">You are: </string>
     <string name="seen_players_label">You see: </string>
 
-
     <string name="assassin">Assassin</string>
     <string name="loyal">Loyal</string>
     <string name="merlin">Merlin</string>
@@ -21,15 +20,5 @@
     <string name="oberon">Oberon</string>
     <string name="percival">Percival</string>
 
-
-    <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
+    <string name="assignment_instructions">You are about to view your assignment in 2 frames. The first frame will show you your role, and the second frame will show you the other players that you know because of your role. PLEASE LOOK AT THE SCREEN IN SILENCE UNTIL ALL THE FRAMES ARE GONE</string>
 </resources>

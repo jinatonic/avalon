@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.avalon.interfaces.AvalonMessageListener;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.network.ServiceMessageProtocol;
@@ -14,7 +13,7 @@ import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 /**
  * Created by jinyan on 5/14/14.
  */
-public abstract class GameStateController implements AvalonMessageListener {
+public abstract class GameStateController {
     protected static final String TAG = GameStateController.class.getSimpleName();
 
     private static final boolean FORCE_SHOW_TOAST_FOR_DEBUGGING = true;
@@ -22,7 +21,10 @@ public abstract class GameStateController implements AvalonMessageListener {
     protected Context mContext;
     private boolean isForeground;
 
-    public abstract boolean started();
+    /**
+     * @return true on success (valid message), false otherwise
+     */
+    public abstract boolean processAvalonMessage(AvalonMessage msg);
 
     /**
      * Always use the bulk operation if you are sending more than one message. This is simply for

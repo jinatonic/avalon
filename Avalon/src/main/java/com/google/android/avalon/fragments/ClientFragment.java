@@ -26,10 +26,6 @@ public class ClientFragment extends Fragment {
     private TextView mSeenPlayersLabel;
     private TextView mSeenPlayersText;
 
-    private BaseFromBtMessageReceiver mReceiver;
-
-    private RoleAssignment mRoleAssignment;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         mClientGameStateController = ClientGameStateController.get(getActivity());
@@ -45,56 +41,26 @@ public class ClientFragment extends Fragment {
         return v;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mReceiver.detach(getActivity());
-    }
-
     public void update() {
         ClientGameState gameState = mClientGameStateController.getCurrentGameState();
         // TODO
     }
 
-    private void setRoleAssignment(RoleAssignment mRoleAssignment) {
-        this.mRoleAssignment = mRoleAssignment;
-        if (mRoleAssignment != null) {
-            showRoleAssignment();
-        }
-    }
+    private void showRoleAssignment(RoleAssignment assignment) {
+        mRoleAssignmentText.setText(assignment.role.name());
 
-    private void showRoleAssignment() {
-        mRoleAssignmentText.setText(mRoleAssignment.role.name());
-
-        if (mRoleAssignment.seenPlayers.length == 0) {
+        if (assignment.seenPlayers.length == 0) {
             mSeenPlayersLabel.setVisibility(View.INVISIBLE);
         } else {
             StringBuilder seenPlayers = new StringBuilder();
             int i = 0;
-            for (PlayerInfo player: mRoleAssignment.seenPlayers) {
+            for (PlayerInfo player: assignment.seenPlayers) {
                 seenPlayers.append(player.name);
-                if (i++ < mRoleAssignment.seenPlayers.length - 1) {
+                if (i++ < assignment.seenPlayers.length - 1) {
                     seenPlayers.append(", ");
                 }
             }
             mSeenPlayersText.setText(seenPlayers);
         }
     }
-
-//    private class MessageReceiver extends BaseFromBtMessageReceiver {
-//
-//        public MessageReceiver() {
-//            super(ClientFragment.this);
-//        }
-//
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            if (intent.hasExtra(ServiceMessageProtocol.AVALON_MESSAGE_KEY)) {
-//                AvalonMessage msg = (AvalonMessage) intent.getSerializableExtra(
-//                        ServiceMessageProtocol.AVALON_MESSAGE_KEY);
-//                handleMessage(msg);
-//            }
-//            super.onReceive(context, intent);
-//        }
-//    }
 }
