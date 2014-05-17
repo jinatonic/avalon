@@ -1,9 +1,7 @@
 package com.google.android.avalon.controllers;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 import android.util.Log;
@@ -11,6 +9,7 @@ import android.util.Log;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.ServerGameState;
 import com.google.android.avalon.model.messages.AvalonMessage;
+import com.google.android.avalon.model.messages.GameOverMessage;
 import com.google.android.avalon.model.messages.GameStartMessage;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.PlayerPositionChange;
@@ -35,11 +34,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerGameStateControllerTest extends AndroidTestCase {
 
     Context mContext;
+    Context realContext;
     ServerGameStateController mController;
-    BroadcastReceiver mReceiver;
 
     // Note that mMessages should be cleared after every event
     Map<PlayerInfo, AvalonMessage> mMessages;
+    int numToasts;
+
+    // global vars for easier validation
+    ServerGameState gameState;
+    PlayerInfo king;
+    PlayerInfo lady;
+    QuestProposal proposal;
+    List<QuestProposalResponse> propResponses;
+    PlayerInfo[] proposedPlayers;
+    QuestExecution exec;
+    List<QuestExecutionResponse> execResponses;
+
 
     // Player pointers
     PlayerInfo player0 = new PlayerInfo("Player0");
@@ -72,14 +83,31 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         public Context getApplicationContext() {
             return this;
         }
+
+        // these methods are here to support capturing Toast.makeText(...).show()
+        @Override
+        public String getPackageName() {
+            return realContext.getPackageName();
+        }
+        @Override
+        public Object getSystemService(String name) {
+            numToasts++;
+            return realContext.getSystemService(name);
+        }
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mContext = new MyMockContext();
+        realContext = getContext();
         mController = ServerGameStateController.get(mContext);
+
         mMessages = new ConcurrentHashMap<PlayerInfo, AvalonMessage>();
+        numToasts = 0;
+
+        propResponses = new ArrayList<QuestProposalResponse>();
+        execResponses = new ArrayList<QuestExecutionResponse>();
     }
 
     /**
@@ -94,11 +122,8 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         // Check initial configuration
         assertEquals(0, mMessages.size());
 
-        List<QuestProposalResponse> propResponses = new ArrayList<QuestProposalResponse>();
-        List<QuestExecutionResponse> execResponses = new ArrayList<QuestExecutionResponse>();
-
-        ServerGameState gameState = mController.getCurrentGameState();
-        validateGameState(gameState, null, null, false, 0, 0, 0, false, null, propResponses, null, execResponses, false);
+        gameState = mController.getCurrentGameState();
+        validateGameState(false, 0, 0, false, false);
 
         GameConfiguration config = new GameConfiguration();
         config.numPlayers = 7;
@@ -154,65 +179,110 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
 
         // Check for resulting state
         gameState = mController.getCurrentGameState();
-        // Assignments are random so we can only check its existence.
-        // We'll rely on AssignmentFactoryTest to make sure that the assignments are correct.
-        assertNotNull(gameState.assignments);
+        assertTrue(gameState.started());
 
-        PlayerInfo king = gameState.currentKing;
+        king = gameState.currentKing;
 
         // Check the outgoing messages and game state
-        validateGameState(gameState, king, null, false, 0, 0, 0, true, null, propResponses, null, execResponses, false);
+        validateGameState(false, 0, 0, true, false);
         validateOutgoingBroadcast(RoleAssignment.class);
         mMessages.clear();
 
-        // FIRST QUEST - 2 players go on the quest
-        // Fail all 5 proposals
-        for (int i = 0; i < 5; i++) {
-            PlayerInfo[] proposedPlayers = new PlayerInfo[] { player4, player1 };
-            QuestProposal proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
-            mController.processAvalonMessage(proposal);
-            propResponses.clear();
+        // FIRST QUEST - 2 players, auto-pass
+        passQuestProposalAndQuest(0, 2);
 
-            // Check the outgoing messages and game state
-            gameState = mController.getCurrentGameState();
-            validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses, false);
-            validateOutgoingBroadcast(QuestProposal.class);
-            // Check one QuestProposal for sanity
-            assertEquals(proposal, mMessages.get(player0));
-            mMessages.clear();
+        // Quest #2 - 3 players, just auto-pass to progress the game
+        passQuestProposalAndQuest(1, 3);
 
-            // Let's fail it
-            for (int j = 0; j < gameState.players.size(); j++) {
-                PlayerInfo player = gameState.players.get(j);
-                QuestProposalResponse rsp = new QuestProposalResponse(player, false, proposal.propNum);
-                mController.processAvalonMessage(rsp);
-                propResponses.add(rsp);
-
-                if (j < gameState.players.size() - 1) {
-                    validateGameState(gameState, king, null, false, 0, 0, i, false, proposal, propResponses, null, execResponses, false);
-                } else {
-                    // Validate resulting state (should be waiting for a new proposal)
-                    gameState = mController.getCurrentGameState();
-                    king = validateKing(gameState, king);
-                    if (i < 4) {
-                        validateGameState(gameState, king, null, false, 0, 0, i+1, true, null, propResponses, null, execResponses, false);
-                    } else {
-                        validateGameState(gameState, king, null, false, 1, 1, 0, true, null, propResponses, null, execResponses, false);
-                        assertFalse(gameState.quests.get(0));
-                    }
-                }
-            }
-        }
-
-        // Quest #2 - 3 players go on
-        PlayerInfo[] proposedPlayers = new PlayerInfo[] {player2, player4, player6};
-        QuestProposal proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        // Quest #3 - 3 players go on
+        proposedPlayers = new PlayerInfo[] {player2, player4, player6};
+        proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
         mController.processAvalonMessage(proposal);
         propResponses.clear();
 
         // Check the outgoing messages and game state
         gameState = mController.getCurrentGameState();
-        validateGameState(gameState, king, null, false, 1, 1, 0, false, proposal, propResponses, null, execResponses, false);
+        validateGameState(false, 2, 0, false, false);
+        mMessages.clear();
+
+        // Fail it by 3 to 4 vote
+        int i = 0;
+        for (PlayerInfo player : gameState.players) {
+            QuestProposalResponse rsp = new QuestProposalResponse(player, i++ % 2 != 0, proposal.propNum);
+            mController.processAvalonMessage(rsp);
+            propResponses.add(rsp);
+        }
+        proposal = null;
+
+        king = validateKing(gameState, king);
+        validateGameState(false, 2, 1, true, false);
+        assertEquals(0, mMessages.size());
+
+        proposedPlayers = new PlayerInfo[] {player1, player5, player6};
+        proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        mController.processAvalonMessage(proposal);
+        propResponses.clear();
+
+        // Check the outgoing messages and game state
+        gameState = mController.getCurrentGameState();
+        validateGameState(false, 2, 1, false, false);
+        mMessages.clear();
+
+        // Pass it by 4 to 3 vote
+        i = 1;
+        for (PlayerInfo player : gameState.players) {
+            QuestProposalResponse rsp = new QuestProposalResponse(player, i++ % 2 != 0, proposal.propNum);
+            mController.processAvalonMessage(rsp);
+            propResponses.add(rsp);
+        }
+        proposal = null;
+        exec = new QuestExecution(gameState.currQuestIndex());
+        execResponses.clear();
+
+        // Validate outgoing messages and game state (should have progressed to quest execution)
+        validateGameState(false, 2, 1, false, false);
+        assertEquals(3, mMessages.size());
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player1)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player5)).questNum);
+        assertEquals(gameState.quests.size(), ((QuestExecution) mMessages.get(player6)).questNum);
+        mMessages.clear();
+
+        // Send out QuestExecutionResponse messages
+        for (i = 0; i < proposedPlayers.length; i++) {
+            PlayerInfo player = proposedPlayers[i];
+            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.quests.size());
+            mController.processAvalonMessage(rsp);
+            execResponses.add(rsp);
+
+            if (i < proposedPlayers.length - 1) {
+                assertEquals(0, mMessages.size());
+                validateGameState(false, 2, 1, false, false);
+            } else {
+                validateOutgoingBroadcast(GameOverMessage.class);
+                exec = null;
+                // Validate resulting state (should be waiting for a new proposal)
+                gameState = mController.getCurrentGameState();
+                assertTrue(gameState.gameOver);
+            }
+        }
+
+        // This test should not raise any warning toasts
+        assertEquals(0, numToasts);
+    }
+
+    // Pass the quest normally (for testing game progressions), the VERY last state is NOT checked
+    // as it can be different depending on what characters are available
+    private void passQuestProposalAndQuest(int questNum, int numPlayers) {
+        // Quest #2 - 3 players go on
+        proposedPlayers = new PlayerInfo[numPlayers];
+        proposedPlayers = players.subList(0, numPlayers).toArray(proposedPlayers);
+        proposal = new QuestProposal(proposedPlayers, king, gameState.currentNumAttempts);
+        mController.processAvalonMessage(proposal);
+        propResponses.clear();
+
+        // Check the outgoing messages and game state
+        gameState = mController.getCurrentGameState();
+        validateGameState(false, questNum, 0, false, false);
         validateOutgoingBroadcast(QuestProposal.class);
         // Check one QuestProposal for sanity
         assertEquals(proposal, mMessages.get(player0));
@@ -225,58 +295,60 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
             mController.processAvalonMessage(rsp);
             propResponses.add(rsp);
         }
+        // We set the expected proposal to null and exec to not null after we get all the responses
+        proposal = null;
+        exec = new QuestExecution(questNum);
+        execResponses.clear();
 
         // Validate outgoing messages and game state (should have progressed to quest execution)
-        validateGameState(gameState, king, null, false, 1, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
-        assertEquals(3, mMessages.size());
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player2)).questNum);
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player4)).questNum);
-        assertEquals(gameState.questNum, ((QuestExecution) mMessages.get(player6)).questNum);
+        validateGameState(false, questNum, 0, false, false);
+        assertEquals(numPlayers, mMessages.size());
+        for (PlayerInfo player : proposedPlayers) {
+            assertEquals(questNum, ((QuestExecution) mMessages.get(player)).questNum);
+        }
         mMessages.clear();
 
         // Send out QuestExecutionResponse messages
-        for (i = 0; i < proposal.questMembers.length; i++) {
-            PlayerInfo player = proposal.questMembers[i];
-            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.questNum);
+        for (i = 0; i < proposedPlayers.length; i++) {
+            PlayerInfo player = proposedPlayers[i];
+            QuestExecutionResponse rsp = new QuestExecutionResponse(player, true, gameState.quests.size());
             mController.processAvalonMessage(rsp);
             execResponses.add(rsp);
 
             assertEquals(0, mMessages.size());
-            if (i < proposal.questMembers.length - 1) {
-                validateGameState(gameState, king, null, false, 1, 1, 0, false, null, propResponses, new QuestExecution(0), execResponses, false);
+            if (i < proposedPlayers.length - 1) {
+                validateGameState(false, questNum, 0, false, false);
             } else {
+                exec = null;    // we are no longer waiting for responses
                 // Validate resulting state (should be waiting for a new proposal)
                 gameState = mController.getCurrentGameState();
-                validateGameState(gameState, king, null, false, 2, 2, 0, true, null, propResponses, null, execResponses, false);
-                assertTrue(gameState.quests.get(1));
+                king = validateKing(gameState, king);
+                validateGameState(false, questNum+1, 0, true, false);
+                assertTrue(gameState.quests.get(questNum));
             }
         }
     }
 
-    private void validateGameState(ServerGameState gameState, PlayerInfo king, PlayerInfo lady,
-            boolean waitingForLady, int questNum, int questsSize, int currAttempts,
-            boolean needQuestProposal, QuestProposal lastProp,
-            List<QuestProposalResponse> lastPropRsps, QuestExecution lastExec,
-            List<QuestExecutionResponse> lastExecRsps, boolean gameOver) {
+    private void validateGameState(boolean waitingForLady, int questsSize, int currAttempts,
+            boolean needQuestProposal, boolean gameOver) {
         assertEquals(king, gameState.currentKing);
         assertEquals(lady, gameState.currentLady);
         assertEquals(waitingForLady, gameState.waitingForLady);
-        assertEquals(questNum, gameState.questNum);
         assertEquals(questsSize, gameState.quests.size());
         assertEquals(currAttempts, gameState.currentNumAttempts);
         assertEquals(needQuestProposal, gameState.needQuestProposal);
 
-        assertEquals(lastProp, gameState.lastQuestProposal);
-        assertEquals(lastPropRsps.size(), gameState.lastQuestProposalResponses.size());
+        assertEquals(proposal, gameState.lastQuestProposal);
+        assertEquals(propResponses.size(), gameState.lastQuestProposalResponses.size());
         // For lists, we don't care about ordering
-        assertTrue(new HashSet<QuestProposalResponse>(lastPropRsps)
+        assertTrue(new HashSet<QuestProposalResponse>(propResponses)
                 .containsAll(gameState.lastQuestProposalResponses));
 
         // Can't really verify QuestExecution object itself
-        assertEquals(lastExec != null, gameState.lastQuestExecution != null);
-        assertEquals(lastExecRsps.size(), gameState.lastQuestExecutionResponses.size());
+        assertEquals(exec != null, gameState.lastQuestExecution != null);
+        assertEquals(execResponses.size(), gameState.lastQuestExecutionResponses.size());
         // For lists, we don't care about ordering
-        assertTrue(new HashSet<QuestExecutionResponse>(lastExecRsps)
+        assertTrue(new HashSet<QuestExecutionResponse>(execResponses)
                 .containsAll(gameState.lastQuestExecutionResponses));
         assertEquals(gameOver, gameState.gameOver);
     }

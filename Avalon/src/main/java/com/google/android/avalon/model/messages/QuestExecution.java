@@ -12,6 +12,6 @@ public class QuestExecution extends AvalonMessage {
 
     @Override
     public String toString() {
-        return "Quest execution " + questNum;
+        return "[msg exec " + questNum + "]";
     }
 }

@@ -98,4 +98,47 @@
             android:layout_height="wrap_content"
             android:text="@string/start_game"/>
     </LinearLayout>
+
+    <!-- Teaser for role assignment, gone by default -->
+    <LinearLayout
+        android:id="@+id/server_setup_teaser_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#70000000"
+        android:visibility="gone">
+
+        <!--
+            Because this is a frame layout, the views are backwards from the order of they are
+            shown. As the animation runs, we'll make the top layer invisible to show the next layer
+        -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="50dp">
+
+            <TextView
+                android:id="@+id/server_setup_teaser_other_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:alpha="0"/>
+
+            <ImageView
+                android:id="@+id/server_setup_teaser_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:alpha="0" />
+
+            <TextView
+                android:id="@+id/server_setup_teaser_instruction_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="@string/assignment_instructions"
+                android:alpha="0" />
+
+        </FrameLayout>
+
+    </LinearLayout>
 </LinearLayout>

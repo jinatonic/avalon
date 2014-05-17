@@ -18,6 +18,6 @@ public class PlayerInfo extends AvalonMessage {
 
     @Override
     public String toString() {
-        return name;
+        return "[msg " + name + "]";
     }
 }

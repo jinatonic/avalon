@@ -10,7 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.avalon.interfaces.AvalonMessageListener;
+import com.google.android.avalon.controllers.GameStateController;
 import com.google.android.avalon.interfaces.BluetoothController;
 import com.google.android.avalon.model.messages.AvalonMessage;
 
@@ -22,7 +22,7 @@ public abstract class BluetoothService extends Service implements BluetoothContr
     private static final String TAG = BluetoothService.class.getSimpleName();
 
     protected BroadcastReceiver mMsgReceiver;
-    protected AvalonMessageListener mMessageListener;
+    protected GameStateController mController;
 
     private Handler mHandler;
 
@@ -58,7 +58,7 @@ public abstract class BluetoothService extends Service implements BluetoothContr
      * something has changed.
      */
     protected void notifyControllerAndUi(AvalonMessage msg) {
-        mMessageListener.processAvalonMessage(msg);
+        mController.processAvalonMessage(msg);
         broadcastUpdate();
     }
 

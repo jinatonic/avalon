@@ -13,7 +13,6 @@ import android.util.Log;
 
 import com.google.android.avalon.AvalonActivity;
 import com.google.android.avalon.controllers.ClientGameStateController;
-import com.google.android.avalon.model.MessageParser;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
@@ -37,8 +36,6 @@ public class BluetoothClientService extends BluetoothService {
     // than one connect call running at once.
     private Handler mHandler;
 
-    private ClientGameStateController mClientGameStateController;
-
     private BluetoothAdapter mBluetoothAdapter;
     private HashSet<String> mSeenAddresses;
 
@@ -54,8 +51,7 @@ public class BluetoothClientService extends BluetoothService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BluetoothClientService starting");
-        mClientGameStateController = ClientGameStateController.get(this);
-        mMessageListener = mClientGameStateController;
+        mController = ClientGameStateController.get(this);
 
         int result = super.onStartCommand(intent, flags, startId);
 
@@ -122,7 +118,9 @@ public class BluetoothClientService extends BluetoothService {
     @Override
     public void onBtMessageReceived(BluetoothSocket socket, AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
-        showToast("Received: " + msg);
+        showToast("Received: " + msg);  // TODO remove me
+
+        notifyControllerAndUi(msg);
     }
 
     @Override
@@ -156,7 +154,7 @@ public class BluetoothClientService extends BluetoothService {
                 // Tell UI of updates just to keep everything in sync
                 broadcastUpdate();
 
-                // Find the appropriate socket and write to it
+                // Write each message down the socket
                 for (int i = 0; i < wrappers.size(); i++) {
                     mWriter.send(wrappers.message.get(i));
                 }
@@ -240,6 +238,9 @@ public class BluetoothClientService extends BluetoothService {
 
                 // Send out client information
                 mWriter.send(mPlayerInfo);
+
+                // Notify the controller of the change
+                notifyControllerAndUi(mPlayerInfo);
             } finally {
                 if (mServerSocket == null) {
                     mSeenAddresses.add(mDevice.getAddress());

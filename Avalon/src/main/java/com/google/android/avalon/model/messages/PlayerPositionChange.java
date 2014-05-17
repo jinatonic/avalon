@@ -11,4 +11,9 @@ public class PlayerPositionChange extends AvalonMessage {
         player = p;
         isIncrement = increment;
     }
+
+    @Override
+    public String toString() {
+        return "[msg " + player.name + " position change]";
+    }
 }

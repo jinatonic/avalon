@@ -27,10 +27,10 @@ public class ServerGameState implements Serializable {
     public PlayerInfo currentLady;  // can be null
     public boolean waitingForLady;  // has priority over needQuestProposal for UI
 
-    public int questNum;    // 0 based
     public List<Boolean> quests = new LinkedList<Boolean>();
     public int currentNumAttempts;
     public boolean gameOver;
+    public boolean goodWon; // shouldn't be checked unless gameOver = true
 
     // Quest proposal approval
     public boolean needQuestProposal;
@@ -47,13 +47,24 @@ public class ServerGameState implements Serializable {
         return players.size();
     }
 
+    public boolean started() {
+        return campaignInfo != null;
+    }
+
+    public int currQuestIndex() {
+        return quests.size();
+    }
+
     public void setNewQuestProposal(QuestProposal proposal) {
         needQuestProposal = false;
         lastQuestProposalResponses.clear();
         lastQuestProposal = proposal;
+        lastQuestExecution = null;
     }
 
     public void setNewQuestExec(QuestExecution exec) {
+        needQuestProposal = false;
+        lastQuestProposal = null;
         lastQuestExecutionResponses.clear();
         lastQuestExecution = exec;
     }

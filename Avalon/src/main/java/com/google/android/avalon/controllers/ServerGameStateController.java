@@ -9,6 +9,8 @@ import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.messages.GameOverMessage;
 import com.google.android.avalon.model.messages.GameStartMessage;
+import com.google.android.avalon.model.messages.LadyRequest;
+import com.google.android.avalon.model.messages.LadyResponse;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.PlayerPositionChange;
@@ -56,7 +58,17 @@ public class ServerGameStateController extends GameStateController {
     }
 
     public void setConfig(GameConfiguration config) {
-        mConfig = config;
+        if (!mGameState.started()) {
+            mConfig = config;
+        }
+    }
+
+    public ServerGameState getCurrentGameState() {
+        return mGameState;
+    }
+
+    public boolean started() {
+        return mGameState.started();
     }
 
     /**
@@ -75,7 +87,6 @@ public class ServerGameStateController extends GameStateController {
 
             // Started successfully
             Log.i(TAG, "Game starting");
-            mStarted = true;
         } catch (IllegalConfigurationException e) {
             // We failed to assign players.
             // TODO: Notify UI.
@@ -86,7 +97,6 @@ public class ServerGameStateController extends GameStateController {
         // Set some default game states
         mGameState.needQuestProposal = true;
         mGameState.currentNumAttempts = 0;
-        mGameState.questNum = 0;
         mGameState.currentKing = mGameState.assignments.king;
         mGameState.currentLady = mGameState.assignments.lady;
 
@@ -98,28 +108,38 @@ public class ServerGameStateController extends GameStateController {
         sendBulkMessages(wrapper);
     }
 
-    // TODO
-    public ServerGameState getCurrentGameState() {
-        return mGameState;
-    }
-
     @Override
-    public void processAvalonMessage(AvalonMessage msg) {
+    public boolean processAvalonMessage(AvalonMessage msg) {
         Log.d(TAG, "processAvalonMessage: " + msg);
         // case through each type and perform appropriate action
+        // Always check if the message is expected by the controller first and show warning toast
+        // if it's not expected.
 
         // GameStartMessage, starts the game (or at least try to)
         if (msg instanceof GameStartMessage) {
+            if (mGameState.started()) {
+                return showWarningToast(msg);
+            }
+
             startGame();
         }
 
         // PlayerInfo, simply add the new info into mPlayers
         else if (msg instanceof PlayerInfo) {
+            if (mGameState.started()) {
+                // TODO: handle player reconnects here
+                return showWarningToast(msg);
+            }
+
             mGameState.players.add((PlayerInfo) msg);
         }
 
         // PlayerPositionChange, do exactly that
         else if (msg instanceof PlayerPositionChange) {
+            if (mGameState.started()) {
+                return showWarningToast(msg);
+            }
+
             PlayerPositionChange pos = (PlayerPositionChange) msg;
             if (mGameState.players.contains(pos.player)) {
                 int lastPos = mGameState.players.indexOf(pos.player);
@@ -130,106 +150,163 @@ public class ServerGameStateController extends GameStateController {
         }
 
         // PlayerDisconnected, do reverse of PlayerInfo
-        // TODO: maybe add support to pause game?
+        // TODO: add support for handling player disconnection/reconnection
         // TODO: replace this feature with an explicit command to remove the player?
         else if (msg instanceof PlayerDisconnected) {
             mGameState.players.remove(((PlayerDisconnected) msg).info);
+
+            // TODO: REMOVE ME ONCE DISCONNECTION/RECONNECTION IS IMPLEMENTED
+            showWarningToast(msg);
+        }
+
+        // LadyRequest, send out the lady response and progress the game
+        else if (msg instanceof LadyRequest) {
+            if (!mGameState.waitingForLady || mGameState.currentLady == null) {
+                return showWarningToast(msg);
+            }
+
+            LadyRequest req = (LadyRequest) msg;
+            LadyResponse rsp = null;
+            for (RoleAssignment assignment : mGameState.assignments.assignments) {
+                if (assignment.player.equals(req.player)) {
+                    rsp = new LadyResponse(mGameState.currentLady, assignment.role.isGood);
+                }
+            }
+
+            if (rsp == null) {
+                Log.e(TAG, "Requested lady target was not found in initial assignments");
+                return false;
+            }
+
+            // Send out lady response
+            sendSingleMessage(mGameState.currentLady, rsp);
+
+            // Progress the game state
+            mGameState.waitingForLady = false;
+            mGameState.needQuestProposal = true;
+            mGameState.currentLady = req.player;
         }
 
         // QuestProposal, save it in the state variable and broadcast it to all players
-        else if (msg instanceof QuestProposal && mGameState.needQuestProposal) {
+        else if (msg instanceof QuestProposal) {
+            if (!mGameState.needQuestProposal) {
+                return showWarningToast(msg);
+            }
+
             // Check that the number of players match the number the quest needs for sanity
             // since this SHOULD be enforced by the UI.
             QuestProposal proposal = (QuestProposal) msg;
             if (proposal.questMembers.length ==
-                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
+                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.currQuestIndex()]) {
                 mGameState.setNewQuestProposal(proposal);
                 broadcastMessageToAllPlayers(msg);
             }
-            // TODO: For this and similar cases below, what is the client expected to do?
-            // (i.e. do we need to send an explicit notification that the request was invalid?)
         }
 
         // QuestProposalResponse, record it. Only advance once all player's responses are received.
-        else if (msg instanceof QuestProposalResponse && mGameState.lastQuestProposal != null &&
-                mGameState.lastQuestProposalResponses.size() < mGameState.players.size()) {
+        else if (msg instanceof QuestProposalResponse) {
+            boolean err = mGameState.lastQuestProposal == null ||
+                    mGameState.lastQuestProposalResponses.size() >= mGameState.players.size();
             QuestProposalResponse rsp = (QuestProposalResponse) msg;
-            if (rsp.propNum == mGameState.lastQuestProposal.propNum) {
-                // Make sure we don't accidentally record duplicate response
+            boolean duplicate = false;
+            // Make sure we don't accidentally record duplicate response
+            for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses) {
+                if (prev.player.equals(rsp.player)) {
+                    duplicate = true;
+                }
+            }
+
+            // check if we are expecting this message
+            if (rsp.propNum != mGameState.lastQuestProposal.propNum || duplicate || err) {
+                return showWarningToast(msg);
+            }
+
+            // Good message, let's process it
+            mGameState.lastQuestProposalResponses.add(rsp);
+
+            // Check for state advance criteria
+            if (mGameState.lastQuestProposalResponses.size() == mGameState.players.size()) {
+                // Set quest state
+                int difference = 0;
                 for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses) {
-                    if (prev.player.equals(rsp.player)) {
-                        return;
-                    }
+                    difference += ((prev.approve) ? 1 : -1);
                 }
-                mGameState.lastQuestProposalResponses.add(rsp);
 
-                // Check for state advance criteria
-                if (mGameState.lastQuestProposalResponses.size() == mGameState.players.size()) {
-                    // Set quest state
-                    int difference = 0;
-                    for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses) {
-                        difference += ((prev.approve) ? 1 : -1);
+                boolean proposalPassed = difference > 0;
+                if (proposalPassed) {
+                    // Send votes to proposed team
+                    ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
+                    QuestExecution exec = new QuestExecution(mGameState.currQuestIndex());
+                    for (PlayerInfo member : mGameState.lastQuestProposal.questMembers) {
+                        wrapper.add(member, exec);
                     }
-
-                    boolean proposalPassed = difference > 0;
-                    if (proposalPassed) {
-                        // Send votes to proposed team
-                        ToBtMessageWrapper wrapper = new ToBtMessageWrapper();
-                        QuestExecution exec = new QuestExecution(mGameState.quests.size());
-                        for (PlayerInfo member : mGameState.lastQuestProposal.questMembers) {
-                            wrapper.add(member, exec);
-                        }
-                        sendBulkMessages(wrapper);
-                        mGameState.setNewQuestExec(exec);
+                    sendBulkMessages(wrapper);
+                    mGameState.setNewQuestExec(exec);
+                } else {
+                    mGameState.currentNumAttempts++;
+                    if (mGameState.currentNumAttempts > 4) {
+                        // auto-game over if we fail 5 proposals
+                        gameOver(false);
                     } else {
-                        mGameState.currentNumAttempts++;
-                        if (mGameState.currentNumAttempts > 4) {
-                            // auto-fail quests after 5 proposal attempts
-                            // TODO this should be auto-game over.
-                            addQuestResultAndCheckCompletion(false);
-                        }
-                        advanceKing();  // TODO shouldn't this also be done if the proposal passed?
+                        advanceKingAndRequestProposal();
                     }
-
-                    // Reset quest proposal so we know that we are not waiting for responses
-                    mGameState.lastQuestProposal = null;
                 }
+
+                // Reset quest proposal so we know that we are not waiting for responses
+                mGameState.lastQuestProposal = null;
             }
         }
 
         // QuestExecutionResponse
-        else if (msg instanceof QuestExecutionResponse && mGameState.lastQuestExecution != null) {
+        else if (msg instanceof QuestExecutionResponse) {
             QuestExecutionResponse rsp = (QuestExecutionResponse) msg;
-            if (rsp.questNum == mGameState.lastQuestExecution.questNum) {
-                // Make sure we don't accidentally record duplicate response
-                for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
-                    if (prev.player.equals(rsp.player)) {
-                        return;
-                    }
-                }
-                mGameState.lastQuestExecutionResponses.add(rsp);
 
-                // Check if we need more
-                if (mGameState.lastQuestExecutionResponses.size() ==
-                        mGameState.campaignInfo.numPeopleOnQuests[mGameState.questNum]) {
-                    // Set quest state
-                    int numFailed = 0;
-                    for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
-                        if (!prev.pass) {
-                            numFailed++;
-                        }
-                    }
-
-                    boolean questPassed = numFailed < mGameState.campaignInfo.numPeopleNeedToFail[
-                            mGameState.questNum];
-
-                    addQuestResultAndCheckCompletion(questPassed);
-
-                    // Reset execution so we know that we are not waiting for responses
-                    mGameState.lastQuestExecution = null;
+            // Make sure we don't accidentally record duplicate response
+            boolean duplicate = false;
+            for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
+                if (prev.player.equals(rsp.player)) {
+                    duplicate = true;
                 }
             }
+
+            // check if we are expecting this message
+            if (rsp.questNum != mGameState.lastQuestExecution.questNum || duplicate ||
+                    mGameState.lastQuestExecution == null) {
+                return showWarningToast(msg);
+            }
+
+            // Good message, let's process it
+            mGameState.lastQuestExecutionResponses.add(rsp);
+
+            // Check if we need more
+            if (mGameState.lastQuestExecutionResponses.size() ==
+                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.currQuestIndex()]) {
+                // Set quest state
+                int numFailed = 0;
+                for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
+                    if (!prev.pass) {
+                        numFailed++;
+                    }
+                }
+
+                boolean questPassed = numFailed < mGameState.campaignInfo.numPeopleNeedToFail[
+                        mGameState.currQuestIndex()];
+
+                addQuestResultAndCheckCompletion(questPassed);
+                advanceKingAndRequestProposal();
+
+                // Reset execution so we know that we are not waiting for responses
+                mGameState.lastQuestExecution = null;
+            }
         }
+
+        // Unrecognized or unsupported message for the server
+        else {
+            return showWarningToast(msg);
+        }
+
+        // If we get here, we processed the message without failure
+        return true;
     }
 
     private void broadcastMessageToAllPlayers(AvalonMessage msg) {
@@ -240,9 +317,17 @@ public class ServerGameStateController extends GameStateController {
         sendBulkMessages(wrapper);
     }
 
+    private void gameOver(boolean goodWon) {
+        if (goodWon && mConfig.specialRoles.contains(AvalonRole.MERLIN)) {
+            // TODO good won and we have merlin, handle assassination attempt.
+        }
+        broadcastMessageToAllPlayers(new GameOverMessage(goodWon));
+        mGameState.gameOver = true;
+        mGameState.goodWon = goodWon;
+    }
+
     private void addQuestResultAndCheckCompletion(boolean passed) {
         mGameState.quests.add(passed);
-        mGameState.questNum++;
         mGameState.currentNumAttempts = 0;
         mGameState.lastQuestExecution = null;
 
@@ -253,29 +338,22 @@ public class ServerGameStateController extends GameStateController {
                 numSuccess++;
             }
         }
-        if (numSuccess >= 3 || mGameState.quests.size() - numSuccess >= 3) {
-            // TODO if numSuccess > 3, handle assassination attempt.
-            broadcastMessageToAllPlayers(new GameOverMessage(numSuccess >= 3));
-            mGameState.gameOver = true;
-            return;
+        if (numSuccess >= 3 || mGameState.currQuestIndex() - numSuccess >= 3) {
+            gameOver(numSuccess >= 3);
         }
 
-        mGameState.needQuestProposal = true;
-        doLadyStuff();
+        // If there is a lady of the lake and it's past 2nd quest, set lady flag
+        if (mGameState.currentLady != null && mGameState.currQuestIndex() >= 2) {
+            mGameState.waitingForLady = true;
+        } else {
+            mGameState.needQuestProposal = true;
+        }
     }
 
-    private void advanceKing() {
+    private void advanceKingAndRequestProposal() {
         int currKingIndex = mGameState.players.indexOf(mGameState.currentKing);
         mGameState.currentKing = mGameState.players.get(inc(currKingIndex));
-        // TODO this is a smell, since the method name implies only the king state should be affected.
         mGameState.needQuestProposal = true;
-    }
-
-    private void doLadyStuff() {
-        // If there is a lady of the lake and it's past 2nd quest, do lady stuff
-        if (mGameState.currentLady != null && mGameState.quests.size() >= 2) {
-            // TODO
-        }
     }
 
     private int inc(int i) {

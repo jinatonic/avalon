@@ -16,6 +16,6 @@ public class QuestExecutionResponse extends AvalonMessage {
 
     @Override
     public String toString() {
-        return player + " responded to quest execution " + questNum + " with: " + pass;
+        return "[msg execRsp from " + player.name + " with " + pass + " for " + questNum + "]";
     }
 }
