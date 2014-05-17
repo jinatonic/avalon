@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -43,13 +44,13 @@ public class SetupServerFragment extends Fragment {
 
     // UI state variables and pointers
     private Spinner mNumPlayers;
-    private ListView mSelectPlayers;
+    private GridView mSelectPlayers;
     private Button mStartGame;
+    private PlayerAdapter mPlayerAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.server_setup_fragment, parent, false);
-
         setupNumPlayers(v);
         setupSelectPlayers(v);
         setupRoleSelections(v);
@@ -59,7 +60,8 @@ public class SetupServerFragment extends Fragment {
     }
 
     public void update() {
-        // TODO force UI update (model changed)
+        // This is the only data that should be affected by the clients.
+        mPlayerAdapter.notifyDataSetChanged();
     }
 
     private void setupNumPlayers(View v) {
@@ -114,8 +116,9 @@ public class SetupServerFragment extends Fragment {
     }
 
     private void setupSelectPlayers(View v) {
-        mSelectPlayers = (ListView) v.findViewById(R.id.select_players_widget);
-        mSelectPlayers.setAdapter(new PlayerAdapter());
+        mSelectPlayers = (GridView) v.findViewById(R.id.select_players_widget);
+        mPlayerAdapter = new PlayerAdapter();
+        mSelectPlayers.setAdapter(mPlayerAdapter);
     }
 
     private class PlayerAdapter extends ArrayAdapter<PlayerInfo> {

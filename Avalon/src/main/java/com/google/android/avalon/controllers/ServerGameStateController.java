@@ -33,27 +33,10 @@ import java.util.Arrays;
 public class ServerGameStateController extends GameStateController {
 
     // Initial configurations
-    private GameConfiguration mConfig = getFullConfig();
-
-    private GameConfiguration getFullConfig() {
-        GameConfiguration cfg = new GameConfiguration();
-        cfg.specialRoles.addAll(Arrays.asList(AvalonRole.MERLIN, AvalonRole.MORGANA, AvalonRole.MORDRED, AvalonRole.OBERON, AvalonRole.PERCIVAL, AvalonRole.ASSASSIN));
-        cfg.numPlayers = 7;
-        return cfg;
-    }
+    private GameConfiguration mConfig = new GameConfiguration();
 
     // Game state
-    private ServerGameState mGameState = getTestGameState();
-
-    private ServerGameState getTestGameState() {
-        ServerGameState state = new ServerGameState();
-        state.players.add(new PlayerInfo("Bob"));
-        PlayerInfo pi = new PlayerInfo("Sam");
-        pi.participating = true;
-        state.players.add(pi);
-        state.players.add(new PlayerInfo("Bill"));
-        return state;
-    }
+    private ServerGameState mGameState = new ServerGameState();
 
     // private for singleton
     private static ServerGameStateController sServerGameStateController;

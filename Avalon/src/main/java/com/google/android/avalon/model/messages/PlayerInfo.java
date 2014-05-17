@@ -10,7 +10,7 @@ public class PlayerInfo extends AvalonMessage {
 
     public String oldName;  // used to either change name or notify to remove
     public String name;
-    public boolean participating;
+    public boolean participating = true;
 
     public PlayerInfo(String name) {
         this.name = name;
