@@ -77,7 +77,7 @@ public class BluetoothServerService extends BluetoothService {
     @Override
     public void onBtMessageReceived(BluetoothSocket socket, AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
-        showToast("Received: " + msg);
+        showToast("Received: " + msg);  // TODO remove me
 
         // Special case playerinfo because we need that data
         PlayerInfo info = null;

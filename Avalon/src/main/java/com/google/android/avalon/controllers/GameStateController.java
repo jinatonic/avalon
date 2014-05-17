@@ -20,8 +20,9 @@ public abstract class GameStateController implements AvalonMessageListener {
     private static final boolean FORCE_SHOW_TOAST_FOR_DEBUGGING = true;
 
     protected Context mContext;
-    protected boolean mStarted;
     private boolean isForeground;
+
+    public abstract boolean started();
 
     /**
      * Always use the bulk operation if you are sending more than one message. This is simply for
@@ -37,15 +38,11 @@ public abstract class GameStateController implements AvalonMessageListener {
      * Create an intent for the BluetoothService to send the message to the appropriate player.
      */
     protected void sendBulkMessages(ToBtMessageWrapper data) {
-        Log.i(TAG, System.currentTimeMillis() + " Sending " + data);
+        Log.i(TAG, "Sending " + data);
         // send intent to service
         Intent i = new Intent(ServiceMessageProtocol.TO_BT_SERVICE_INTENT);
         i.putExtra(ServiceMessageProtocol.DATA_WRAPPER_ARRAY_KEY, data);
         mContext.sendBroadcast(i);
-    }
-
-    public boolean started() {
-        return mStarted;
     }
 
     public void isForeground(boolean foreground) {

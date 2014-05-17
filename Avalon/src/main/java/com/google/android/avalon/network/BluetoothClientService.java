@@ -123,6 +123,8 @@ public class BluetoothClientService extends BluetoothService {
     public void onBtMessageReceived(BluetoothSocket socket, AvalonMessage msg) {
         Log.i(TAG, "broadcasting avalon message " + msg);
         showToast("Received: " + msg);
+
+        notifyControllerAndUi(msg);
     }
 
     @Override
@@ -156,7 +158,7 @@ public class BluetoothClientService extends BluetoothService {
                 // Tell UI of updates just to keep everything in sync
                 broadcastUpdate();
 
-                // Find the appropriate socket and write to it
+                // Write each message down the socket
                 for (int i = 0; i < wrappers.size(); i++) {
                     mWriter.send(wrappers.message.get(i));
                 }

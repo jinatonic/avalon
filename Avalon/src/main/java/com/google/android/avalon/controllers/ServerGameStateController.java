@@ -8,6 +8,8 @@ import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.messages.GameOverMessage;
 import com.google.android.avalon.model.messages.GameStartMessage;
+import com.google.android.avalon.model.messages.LadyRequest;
+import com.google.android.avalon.model.messages.LadyResponse;
 import com.google.android.avalon.model.messages.PlayerDisconnected;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.PlayerPositionChange;
@@ -54,6 +56,15 @@ public class ServerGameStateController extends GameStateController {
         }
     }
 
+    public ServerGameState getCurrentGameState() {
+        return mGameState;
+    }
+
+    @Override
+    public boolean started() {
+        return mGameState.started();
+    }
+
     /**
      * Attempts to start the game, returns the initial assignments on success or null on failure.
      */
@@ -70,7 +81,6 @@ public class ServerGameStateController extends GameStateController {
 
             // Started successfully
             Log.i(TAG, "Game starting");
-            mStarted = true;
         } catch (IllegalConfigurationException e) {
             // We failed to assign players.
             // TODO: Notify UI.
@@ -90,10 +100,6 @@ public class ServerGameStateController extends GameStateController {
             wrapper.add(assignment.player, assignment);
         }
         sendBulkMessages(wrapper);
-    }
-
-    public ServerGameState getCurrentGameState() {
-        return mGameState;
     }
 
     @Override
@@ -145,6 +151,34 @@ public class ServerGameStateController extends GameStateController {
 
             // TODO: REMOVE ME ONCE DISCONNECTION/RECONNECTION IS IMPLEMENTED
             showWarningToast(msg);
+        }
+
+        // LadyRequest, send out the lady response and progress the game
+        else if (msg instanceof LadyRequest) {
+            if (!mGameState.waitingForLady || mGameState.currentLady == null) {
+                return showWarningToast(msg);
+            }
+
+            LadyRequest req = (LadyRequest) msg;
+            LadyResponse rsp = null;
+            for (RoleAssignment assignment : mGameState.assignments.assignments) {
+                if (assignment.player.equals(req.player)) {
+                    rsp = new LadyResponse(mGameState.currentLady, assignment.role.isGood);
+                }
+            }
+
+            if (rsp == null) {
+                Log.e(TAG, "Requested lady target was not found in initial assignments");
+                return false;
+            }
+
+            // Send out lady response
+            sendSingleMessage(mGameState.currentLady, rsp);
+
+            // Progress the game state
+            mGameState.waitingForLady = false;
+            mGameState.needQuestProposal = true;
+            mGameState.currentLady = req.player;
         }
 
         // QuestProposal, save it in the state variable and broadcast it to all players
@@ -260,7 +294,7 @@ public class ServerGameStateController extends GameStateController {
             }
         }
 
-        // Unrecognized or supported message for server
+        // Unrecognized or unsupported message for the server
         else {
             return showWarningToast(msg);
         }
@@ -302,21 +336,18 @@ public class ServerGameStateController extends GameStateController {
             gameOver(numSuccess >= 3);
         }
 
-        mGameState.needQuestProposal = true;
-        doLadyStuff();
+        // If there is a lady of the lake and it's past 2nd quest, set lady flag
+        if (mGameState.currentLady != null && mGameState.currQuestIndex() >= 2) {
+            mGameState.waitingForLady = true;
+        } else {
+            mGameState.needQuestProposal = true;
+        }
     }
 
     private void advanceKingAndRequestProposal() {
         int currKingIndex = mGameState.players.indexOf(mGameState.currentKing);
         mGameState.currentKing = mGameState.players.get(inc(currKingIndex));
         mGameState.needQuestProposal = true;
-    }
-
-    private void doLadyStuff() {
-        // If there is a lady of the lake and it's past 2nd quest, do lady stuff
-        if (mGameState.currentLady != null && mGameState.currQuestIndex() >= 2) {
-            // TODO
-        }
     }
 
     private int inc(int i) {
