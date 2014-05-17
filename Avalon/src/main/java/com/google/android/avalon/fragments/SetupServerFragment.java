@@ -1,6 +1,7 @@
 package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -113,7 +115,34 @@ public class SetupServerFragment extends Fragment {
 
     private void setupSelectPlayers(View v) {
         mSelectPlayers = (ListView) v.findViewById(R.id.select_players_widget);
-        mSelectPlayers.setAdapter(new PlayerAdapter(getPlayers()));
+        mSelectPlayers.setAdapter(new PlayerAdapter());
+    }
+
+    private class PlayerAdapter extends ArrayAdapter<PlayerInfo> {
+
+        public PlayerAdapter() {
+            super(getActivity(), 0, getPlayers());
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                convertView = getActivity().getLayoutInflater().inflate(
+                        R.layout.select_player, null);
+                ((CheckBox)convertView).setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            PlayerInfo playerInfo = getItem(position);
+                            playerInfo.participating = b;
+                        }
+                    });
+            }
+            PlayerInfo player = getItem(position);
+            ((CheckBox)convertView).setChecked(player.participating);
+            ((CheckBox)convertView).setText(player.name);
+            return convertView;
+        }
     }
 
     // TODO add element for lady of the lake.
@@ -162,40 +191,6 @@ public class SetupServerFragment extends Fragment {
         return ServerGameStateController.get(getActivity()).getCurrentGameState().players;
     }
 
-    private class PlayerAdapter extends ArrayAdapter<PlayerInfo> {
-        public PlayerAdapter(List<PlayerInfo> players) {
-            super(getActivity(), 0, players);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = getActivity().getLayoutInflater().inflate(
-                        R.layout.select_player, null);
-            }
-
-            final PlayerInfo pi = getItem(position);
-
-            ((TextView)convertView.findViewById(R.id.player_name_widget)).setText(pi.name);
-            CheckBox playerSelected = (CheckBox) convertView.findViewById(R.id.player_selected_widget);
-            Log.i("MWALL DEBUG", "Player " + pi.name + " is participating? " + pi.participating);
-            playerSelected.setChecked(pi.participating);
-
-            playerSelected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                    Log.i("MWALL DEBUG", "SET player " + pi.name + " to participating " + checked);
-                    Log.i("MWALL DEBUG", "BUTTON TEXT: " + compoundButton.getText() + " PI NAME: " + pi.name);
-                    compoundButton.setText(pi.name);
-                    pi.participating = checked;
-                    updateStartButton();
-                }
-            });
-
-            return convertView;
-        }
-    }
-
     private void updateStartButton() {
         mStartGame.setEnabled(readyToStart());
     }
@@ -207,10 +202,9 @@ public class SetupServerFragment extends Fragment {
 
     private List<PlayerInfo> getParticipatingPlayers() {
         List<PlayerInfo> result = new ArrayList<PlayerInfo>();
-        PlayerAdapter playerAdapter = (PlayerAdapter) mSelectPlayers.getAdapter();
-        for (int i = 0; i < playerAdapter.getCount(); i++) {
-            if (playerAdapter.getItem(i).participating) {
-                result.add(playerAdapter.getItem(i));
+        for (PlayerInfo pi : getPlayers()) {
+            if (pi.participating) {
+                result.add(pi);
             }
         }
         return result;
