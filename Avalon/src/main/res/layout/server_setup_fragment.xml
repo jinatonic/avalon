@@ -1,73 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center">
+    android:layout_height="match_parent">
 
-     <Spinner
-         android:id="@+id/num_players_widget"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"/>
-
-    <ListView
-        android:id="@+id/select_players_widget"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"
+        android:gravity="center">
 
-    <TableLayout
+        <Spinner
+            android:id="@+id/num_players_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <ListView
+            android:id="@+id/select_players_widget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow>
+                <CheckBox
+                    android:id="@+id/assassin_selected_widget"
+                    android:text="@string/assassin"
+                    android:layout_weight="1"
+                    />
+                <CheckBox
+                    android:id="@+id/merlin_selected_widget"
+                    android:text="@string/merlin"
+                    android:layout_weight="1"
+                    />
+                <CheckBox
+                    android:id="@+id/percival_selected_widget"
+                    android:text="@string/percival"
+                    android:layout_weight="1"
+                    />
+            </TableRow>
+            <TableRow>
+                <CheckBox
+                    android:id="@+id/mordred_selected_widget"
+                    android:text="@string/mordred"
+                    android:layout_weight="1"
+                    />
+                <CheckBox
+                    android:id="@+id/morgana_selected_widget"
+                    android:text="@string/morgana"
+                    android:layout_weight="1"
+                    />
+                <CheckBox
+                    android:id="@+id/oberon_selected_widget"
+                    android:text="@string/oberon"
+                    android:layout_weight="1"
+                    />
+            </TableRow>
+
+        </TableLayout>
+
+        <Button
+            android:id="@+id/start_game_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/start_game"/>
+
+        <TextView
+            android:id="@+id/server_status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30dp" />
+
+    </LinearLayout>
+
+    <!-- Teaser for role assignment, gone by default -->
+    <LinearLayout
+        android:id="@+id/server_setup_teaser_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:background="#70000000"
+        android:visibility="gone">
 
-        <TableRow>
-            <CheckBox
-                android:id="@+id/assassin_selected_widget"
-                android:text="@string/assassin"
-                android:layout_weight="1"
-                />
-            <CheckBox
-                android:id="@+id/merlin_selected_widget"
-                android:text="@string/merlin"
-                android:layout_weight="1"
-                />
-            <CheckBox
-                android:id="@+id/percival_selected_widget"
-                android:text="@string/percival"
-                android:layout_weight="1"
-                />
-        </TableRow>
-        <TableRow>
-            <CheckBox
-                android:id="@+id/mordred_selected_widget"
-                android:text="@string/mordred"
-                android:layout_weight="1"
-                />
-            <CheckBox
-                android:id="@+id/morgana_selected_widget"
-                android:text="@string/morgana"
-                android:layout_weight="1"
-                />
-            <CheckBox
-                android:id="@+id/oberon_selected_widget"
-                android:text="@string/oberon"
-                android:layout_weight="1"
-                />
-        </TableRow>
+        <!--
+            Because this is a frame layout, the views are backwards from the order of they are
+            shown. As the animation runs, we'll make the top layer invisible to show the next layer
+        -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="50dp">
 
-    </TableLayout>
+            <TextView
+                android:id="@+id/server_setup_teaser_other_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:alpha="0"/>
 
-    <Button
-        android:id="@+id/start_game_widget"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/start_game"/>
+            <ImageView
+                android:id="@+id/server_setup_teaser_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:alpha="0" />
 
-    <TextView
-        android:id="@+id/server_status_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="30dp" />
+            <TextView
+                android:id="@+id/server_setup_teaser_instruction_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="@string/assignment_instructions"
+                android:alpha="0" />
 
-</LinearLayout>
+            </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

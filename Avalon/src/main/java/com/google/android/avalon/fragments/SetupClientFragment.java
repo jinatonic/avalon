@@ -1,11 +1,14 @@
 package com.google.android.avalon.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.R;
@@ -13,6 +16,9 @@ import com.google.android.avalon.controllers.ClientGameStateController;
 import com.google.android.avalon.model.ClientGameState;
 import com.google.android.avalon.model.messages.ClientSetupDoneMessage;
 import com.google.android.avalon.model.messages.RoleAssignment;
+import com.google.android.avalon.utils.AnimationUtils;
+
+import java.util.Arrays;
 
 /**
  * Created by jinyan on 5/12/14.
@@ -26,6 +32,7 @@ public class SetupClientFragment extends Fragment {
 
     // UI state variables and pointers
     private TextView mStatusTextView;
+    private View mTeaserContainer;
     private boolean mShowStatus = false;
 
     @Override
@@ -34,6 +41,7 @@ public class SetupClientFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.client_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.client_status_text);
+        mTeaserContainer = v.findViewById(R.id.server_setup_teaser_container);
 
         if (savedInstanceState != null) {
             mShowStatus = savedInstanceState.getBoolean(SHOW_KEY);
@@ -63,34 +71,47 @@ public class SetupClientFragment extends Fragment {
     private void runAnimation(RoleAssignment assignment) {
         Handler handler = new Handler();
 
-        // First, we show the INSTRUCTIONS
-        handler.post(new Runnable() {
-            @Override public void run() {
-                // TODO (jin)
-            }
-        });
+        mTeaserContainer.setVisibility(View.VISIBLE);
+        final View instruction = mTeaserContainer.findViewById(
+                R.id.server_setup_teaser_instruction_text);
+        final ImageView image = (ImageView) mTeaserContainer.findViewById(
+                R.id.server_setup_teaser_image);
+        final TextView other = (TextView) mTeaserContainer.findViewById(
+                R.id.server_setup_teaser_other_info);
+
+        // TODO: get actual images
+        image.setImageResource(R.drawable.ic_launcher);
+        // TODO: actually format this
+        other.setText("You see " + Arrays.toString(assignment.seenPlayers));
+
+        // First, we show the INSTRUCTIONS (see R.string.assignment_instructions)
+        AnimationUtils.fadeIn(instruction);
 
         // Then, we show the image of your role
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                // TODO (jin) download the images
+                AnimationUtils.fadeOut(instruction);
+                AnimationUtils.fadeIn(image);
+
             }
         }, TIME_DELAY_FOR_ANIM);
 
         // Next, we show the other players that we know of
         handler.postDelayed(new Runnable() {
             @Override public void run() {
-                // TODO (jin)
+                AnimationUtils.fadeOut(image);
+                AnimationUtils.fadeIn(other);
             }
-        }, TIME_DELAY_FOR_ANIM);
+        }, TIME_DELAY_FOR_ANIM * 2);
 
         // Finally, we notify the controller that we can start the game
         handler.postDelayed(new Runnable() {
             @Override public void run() {
+                AnimationUtils.fadeOut(other);
                 mClientGameStateController.processAvalonMessage(new ClientSetupDoneMessage());
             }
-        }, TIME_DELAY_FOR_ANIM);
+        }, TIME_DELAY_FOR_ANIM * 3);
     }
 
     private void show(final boolean discovered) {
