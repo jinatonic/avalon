@@ -1,9 +1,7 @@
 package com.google.android.avalon.fragments;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,23 +9,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
 import android.widget.GridView;
-import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.avalon.AvalonActivity;
 import com.google.android.R;
 import com.google.android.avalon.controllers.ServerGameStateController;
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.InitialAssignments;
-import com.google.android.avalon.model.ServerGameState;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.RoleAssignment;
+import com.google.android.avalon.network.BluetoothServerService;
 import com.google.android.avalon.rules.AssignmentFactory;
 import com.google.android.avalon.rules.IllegalConfigurationException;
 
@@ -89,7 +83,11 @@ public class SetupServerFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 updateStartButton();
-                getConfig().numPlayers = adapter.getItem(i).value;
+                int numPlayers = adapter.getItem(i).value;
+                getConfig().numPlayers = numPlayers;
+
+                // Send the new intent to the service so we know how many connections to expect
+                BluetoothServerService.startBtServerService(getActivity(), numPlayers);
             }
 
             @Override

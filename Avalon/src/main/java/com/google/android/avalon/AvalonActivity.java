@@ -14,8 +14,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -38,6 +44,7 @@ import java.util.UUID;
 
 
 public class AvalonActivity extends Activity implements RoleSelectorCallback, UiChangedListener {
+    private static final int DEFAULT_NUM_PLAYERS = 7;
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String IS_SERVER_KEY = "is_server_key";
     private static final String GAME_PROGRESSION_KEY = "game_progression_key";
@@ -69,9 +76,6 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //Remove title bar
-        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_avalon);
 
@@ -149,6 +153,33 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem disconnect = menu.findItem(R.id.disconnect);
+        disconnect.setEnabled(mGameProgression != ROLE_SELECTION);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.disconnect) {
+            mGameProgression = ROLE_SELECTION;
+
+            // Try to stop the current intent
+            if (mIsServer) {
+                stopService(new Intent(this, BluetoothServerService.class));
+            } else {
+                stopService(new Intent(this, BluetoothClientService.class));
+            }
+            mIsServer = false;
+
+            updateFragment();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode != Activity.RESULT_OK) {
@@ -223,6 +254,9 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
                     .replace(R.id.fragment_container, frag)
                     .commit();
         }
+
+        // Refresh menu
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -237,11 +271,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
             discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
             startActivity(discoverableIntent);
 
-            Intent i = new Intent(this, BluetoothServerService.class);
-            // TODO: add input for this so we can actually have more than 2 players
-            i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 2);
-            startService(i);
-
+            BluetoothServerService.startBtServerService(this, DEFAULT_NUM_PLAYERS);
         } else {
             DialogFragment dialog = new NameInputDialog();
             dialog.show(getFragmentManager(), "name_input_dialog");
@@ -325,6 +355,17 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
                             }
                         }
                     });
+                }
+            });
+
+            // Auto-show the keyboard
+            v.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        dialog.getWindow().setSoftInputMode(
+                                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                    }
                 }
             });
 

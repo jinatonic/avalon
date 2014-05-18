@@ -4,6 +4,8 @@
     <string name="app_name">Avalon</string>
     <string name="setup_title">Game Setup</string>
 
+    <string name="disconnect_menu">Disconnect</string>
+
     <string name="role_prompter">Select your role</string>
     <string name="server">Server</string>
     <string name="client">Client</string>

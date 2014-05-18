@@ -35,6 +35,12 @@ public class BluetoothServerService extends BluetoothService {
 
     private AcceptThread mAcceptThread;
 
+    public static void startBtServerService(Context context, int numPlayers) {
+        Intent i = new Intent(context, BluetoothServerService.class);
+        i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, numPlayers);
+        context.startService(i);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "BluetoothServerService starting");

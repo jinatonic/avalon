@@ -101,15 +101,21 @@ public class ClientFragment extends Fragment {
             // TODO: format this
             mOtherInfoText.setText(Arrays.toString(gameState.proposal.questMembers));
         } else if (gameState.execution != null) {
-            mOtherInfoText.setText(null);
             mStatusText.setText(getString(R.string.client_vote_for_exec));
             mYesButton.setVisibility(View.VISIBLE);
             mNoButton.setVisibility(View.VISIBLE);
-        } else {
             mOtherInfoText.setText(null);
+        } else if (gameState.ladyRsp != null) {
+            mStatusText.setText(gameState.ladyRsp.player.name + " is " +
+                    (gameState.ladyRsp.isGood ? "good" : "evil"));
+            mYesButton.setVisibility(View.INVISIBLE);
+            mNoButton.setVisibility(View.INVISIBLE);
+            mOtherInfoText.setText(null);
+        } else {
             mStatusText.setText(getString(R.string.client_default_status));
             mYesButton.setVisibility(View.INVISIBLE);
             mNoButton.setVisibility(View.INVISIBLE);
+            mOtherInfoText.setText(null);
         }
     }
 
