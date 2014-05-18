@@ -67,9 +67,6 @@ public class BluetoothClientService extends BluetoothService {
         mSeenAddresses = new HashSet<String>();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        // Notify UI and controller of acquired player information
-        notifyControllerAndUi(mPlayerInfo);
-
         if (mServerSocket == null || !mServerSocket.isConnected()) {
             Log.d(TAG, "Starting discovery process");
             resetHandler();

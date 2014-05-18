@@ -58,7 +58,8 @@ public class ClientGameStateController extends GameStateController {
         // PlayerInfo from the client UI, save the info and forward it to the server
         if (msg instanceof PlayerInfo) {
             mGameState.player = (PlayerInfo) msg;
-            sendSingleMessage(mGameState.player, msg);
+            // Here we don't actually send the PlayerInfo because the Bluetooth client will auto
+            // send it once connection is established.
         }
 
         // RoleAssignment from server

@@ -13,13 +13,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 
 import com.google.android.R;
 import com.google.android.avalon.controllers.ClientGameStateController;
@@ -35,8 +32,6 @@ import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
 import com.google.android.avalon.network.ServiceMessageProtocol;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 

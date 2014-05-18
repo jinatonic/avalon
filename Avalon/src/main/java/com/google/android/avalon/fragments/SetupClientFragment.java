@@ -16,8 +16,6 @@ import com.google.android.avalon.model.messages.ClientSetupDoneMessage;
 import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.utils.AnimationUtils;
 
-import java.util.Arrays;
-
 /**
  * Created by jinyan on 5/12/14.
  */
