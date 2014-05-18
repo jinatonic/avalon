@@ -1,7 +1,5 @@
 package com.google.android.avalon.fragments;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,7 +39,7 @@ public class SetupClientFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.client_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.client_status_text);
-        mTeaserContainer = v.findViewById(R.id.server_setup_teaser_container);
+        mTeaserContainer = v.findViewById(R.id.client_setup_teaser_container);
 
         if (savedInstanceState != null) {
             mShowStatus = savedInstanceState.getBoolean(SHOW_KEY);
@@ -73,11 +71,11 @@ public class SetupClientFragment extends Fragment {
 
         mTeaserContainer.setVisibility(View.VISIBLE);
         final View instruction = mTeaserContainer.findViewById(
-                R.id.server_setup_teaser_instruction_text);
+                R.id.client_setup_teaser_instruction_text);
         final ImageView image = (ImageView) mTeaserContainer.findViewById(
-                R.id.server_setup_teaser_image);
+                R.id.client_setup_teaser_image);
         final TextView other = (TextView) mTeaserContainer.findViewById(
-                R.id.server_setup_teaser_other_info);
+                R.id.client_setup_teaser_other_info);
 
         // TODO: get actual images
         image.setImageResource(R.drawable.ic_launcher);

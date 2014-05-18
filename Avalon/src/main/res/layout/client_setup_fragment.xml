@@ -1,15 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/server_setup_container"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/client_status_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="30dp" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/client_status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30dp" />
+    </LinearLayout>
+
+    <!-- Teaser for role assignment, gone by default -->
+    <LinearLayout
+        android:id="@+id/client_setup_teaser_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#70000000"
+        android:visibility="gone">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="50dp">
+
+            <TextView
+                android:id="@+id/client_setup_teaser_other_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:alpha="0" />
+
+            <ImageView
+                android:id="@+id/client_setup_teaser_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:alpha="0" />
+
+            <TextView
+                android:id="@+id/client_setup_teaser_instruction_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20dp"
+                android:text="@string/assignment_instructions"
+                android:alpha="0" />
+
+        </FrameLayout>
+    </LinearLayout>
+
+</FrameLayout>
