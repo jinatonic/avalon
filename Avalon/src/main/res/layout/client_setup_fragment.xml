@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:id="@+id/server_setup_container"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:orientation="vertical"
@@ -28,29 +27,37 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="50dp">
+            android:padding="30dp"
+            android:background="#FFFFFF">
 
             <TextView
                 android:id="@+id/client_setup_teaser_other_info"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:textSize="20dp"
-                android:alpha="0" />
+                android:alpha="0"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:lineSpacingExtra="3dp"/>
 
             <ImageView
                 android:id="@+id/client_setup_teaser_image"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:scaleType="center"
-                android:alpha="0" />
+                android:alpha="0"
+                android:layout_gravity="center"/>
 
             <TextView
                 android:id="@+id/client_setup_teaser_instruction_text"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:textSize="20dp"
                 android:text="@string/assignment_instructions"
-                android:alpha="0" />
+                android:alpha="0"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:lineSpacingExtra="3dp"/>
 
         </FrameLayout>
     </LinearLayout>

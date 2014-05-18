@@ -27,6 +27,7 @@ import com.google.android.avalon.fragments.ServerFragment;
 import com.google.android.avalon.fragments.SetupClientFragment;
 import com.google.android.avalon.fragments.SetupServerFragment;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
+import com.google.android.avalon.interfaces.UiChangedListener;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
@@ -35,7 +36,7 @@ import com.google.android.avalon.network.ServiceMessageProtocol;
 import java.util.UUID;
 
 
-public class AvalonActivity extends Activity implements RoleSelectorCallback {
+public class AvalonActivity extends Activity implements RoleSelectorCallback, UiChangedListener {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String IS_SERVER_KEY = "is_server_key";
     private static final String GAME_PROGRESSION_KEY = "game_progression_key";
@@ -157,7 +158,8 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
      * This function basically tells the appropriate fragment to update its data from the
      * game state controller.
      */
-    private void notifyDataChanged() {
+    @Override
+    public void notifyDataChanged() {
         switch (mGameProgression) {
             case ROLE_SELECTION:
                 // Should never happen, can't have any data without even choosing the role
@@ -195,12 +197,15 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
         Fragment frag = null;
         switch (mGameProgression) {
             case ROLE_SELECTION:
+                Log.d(TAG, "updateFragment: role selection");
                 frag = mRoleSelectionFragment;
                 break;
             case SETTING_UP_BT:
+                Log.d(TAG, "updateFragment: setup");
                 frag = (mIsServer) ? mSetupServerFragment : mSetupClientFragment;
                 break;
             case GAME_IN_PROGRESS:
+                Log.d(TAG, "updateFragment: game in progress");
                 frag = (mIsServer) ? mServerFragment : mClientFragment;
                 break;
             default:
@@ -228,7 +233,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback {
             startActivity(discoverableIntent);
 
             Intent i = new Intent(this, BluetoothServerService.class);
-            // TODO: add input for this
+            // TODO: add input for this so we can actually have more than 2 players
             i.putExtra(BluetoothServerService.NUM_PLAYERS_KEY, 2);
             startService(i);
 

@@ -40,7 +40,7 @@ public class ServerFragment extends Fragment {
 
     public void update() {
         ServerGameState gameState = mServerGameStateController.getCurrentGameState();
-        // TODO
+        // TODO complete the update function
     }
 
 }

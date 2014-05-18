@@ -11,10 +11,15 @@ import android.widget.TextView;
 
 import com.google.android.R;
 import com.google.android.avalon.controllers.ClientGameStateController;
+import com.google.android.avalon.interfaces.UiChangedListener;
+import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.ClientGameState;
 import com.google.android.avalon.model.messages.ClientSetupDoneMessage;
+import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.model.messages.RoleAssignment;
 import com.google.android.avalon.utils.AnimationUtils;
+
+import java.util.HashSet;
 
 /**
  * Created by jinyan on 5/12/14.
@@ -22,9 +27,10 @@ import com.google.android.avalon.utils.AnimationUtils;
 public class SetupClientFragment extends Fragment {
 
     private static final String SHOW_KEY = "show_key";
-    private static final int TIME_DELAY_FOR_ANIM = 5000;    // ms
+    private static final int TIME_DELAY_FOR_ANIM = 7000;    // ms
 
     private ClientGameStateController mClientGameStateController;
+    private UiChangedListener mUiChangedListener;
 
     // UI state variables and pointers
     private TextView mStatusTextView;
@@ -34,6 +40,7 @@ public class SetupClientFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         mClientGameStateController = ClientGameStateController.get(getActivity());
+        mUiChangedListener = (UiChangedListener) getActivity();
 
         View v = inflater.inflate(R.layout.client_setup_fragment, parent, false);
         mStatusTextView = (TextView) v.findViewById(R.id.client_status_text);
@@ -43,6 +50,8 @@ public class SetupClientFragment extends Fragment {
             mShowStatus = savedInstanceState.getBoolean(SHOW_KEY);
         }
         show(mShowStatus);
+
+        runAnimation(new RoleAssignment(new PlayerInfo("Jin"), AvalonRole.LOYAL, new HashSet<PlayerInfo>()));
 
         return v;
     }
@@ -89,7 +98,6 @@ public class SetupClientFragment extends Fragment {
             public void run() {
                 AnimationUtils.fadeOut(instruction);
                 AnimationUtils.fadeIn(image);
-
             }
         }, TIME_DELAY_FOR_ANIM);
 
@@ -106,6 +114,9 @@ public class SetupClientFragment extends Fragment {
             @Override public void run() {
                 AnimationUtils.fadeOut(other);
                 mClientGameStateController.processAvalonMessage(new ClientSetupDoneMessage());
+
+                // We have to manually notify the activity
+                mUiChangedListener.notifyDataChanged();
             }
         }, TIME_DELAY_FOR_ANIM * 3);
     }
