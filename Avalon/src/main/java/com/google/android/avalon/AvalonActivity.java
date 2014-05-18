@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -68,6 +69,10 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Remove title bar
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_avalon);
 
         if (savedInstanceState != null) {
@@ -92,6 +97,10 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
         mReceiver = new BtMessageReceiver();
         IntentFilter filter = new IntentFilter(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT);
         registerReceiver(mReceiver, filter);
+
+        // TODO REMOVE ME BEFORE COMMIT
+        mGameProgression = GAME_IN_PROGRESS;
+        mIsServer = false;
 
         // Resume fragment states and reset pointers
         updateFragment();

@@ -51,8 +51,6 @@ public class SetupClientFragment extends Fragment {
         }
         show(mShowStatus);
 
-        runAnimation(new RoleAssignment(new PlayerInfo("Jin"), AvalonRole.LOYAL, new HashSet<PlayerInfo>()));
-
         return v;
     }
 

@@ -5,33 +5,105 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <LinearLayout
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/default_text_size"
+                    android:text="@string/role_label"/>
+                <TextView
+                    android:id="@+id/role_assignment_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/default_text_size"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/seen_players_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/seen_players_label"
+                    android:textSize="@dimen/default_text_size"/>
+                <TextView
+                    android:id="@+id/seen_players_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/default_text_size"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/client_sensitive_data_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:textSize="@dimen/default_text_size"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/show_sensitive_data_on_touch"
+            android:background="#FFFFFF"/>
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/client_fragment_status_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/role_label"/>
-        <TextView
-            android:id="@+id/role_assignment_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+        android:textSize="@dimen/default_text_size"
+        android:gravity="center"
+        android:padding="15dp"/>
+
+    <TextView
+        android:id="@+id/client_fragment_other_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/default_text_size"
+        android:gravity="center"
+        android:padding="15dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/seen_players_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/seen_players_label"/>
-        <TextView
-            android:id="@+id/seen_players_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/client_button_no"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/redx"
+            android:padding="10dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/button"
+            android:clickable="true"/>
+
+        <ImageView
+            android:id="@+id/client_button_yes"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/check"
+            android:padding="10dp"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/button"
+            android:clickable="true"/>
+
+        </LinearLayout>
 
 </LinearLayout>

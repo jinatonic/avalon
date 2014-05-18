@@ -23,4 +23,9 @@
 
     <string name="assignment_instructions">You are about to view your assignment in 2 frames. The first frame will show you your role, and the second frame will show you the other players that you know because of your role. PLEASE LOOK AT THE SCREEN IN SILENCE UNTIL ALL THE FRAMES ARE GONE</string>
 
+    <string name="show_sensitive_data_on_touch">Press and hold to view your assignment.</string>
+    <string name="client_default_status">No action required.</string>
+    <string name="client_vote_for_proposal">Please vote for the following proposal.</string>
+    <string name="client_vote_for_exec">Please pass or fail this quest.</string>
+
 </resources>

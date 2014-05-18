@@ -44,6 +44,20 @@ public class ClientGameStateController extends GameStateController {
         return mGameState.started();
     }
 
+    public void processClientResponse(boolean accepted) {
+        if (mGameState.proposal != null) {
+            // if it's a proposal..
+            QuestProposalResponse rsp = new QuestProposalResponse(mGameState.player, accepted,
+                    mGameState.proposal.propNum);
+            processAvalonMessage(rsp);
+        } else if (mGameState.execution != null) {
+            // if it's an execution
+            QuestExecutionResponse rsp = new QuestExecutionResponse(mGameState.player, accepted,
+                    mGameState.execution.questNum);
+            processAvalonMessage(rsp);
+        }
+    }
+
     @Override
     public boolean processAvalonMessage(AvalonMessage msg) {
         Log.d(TAG, "processAvalonMessage: " + msg);

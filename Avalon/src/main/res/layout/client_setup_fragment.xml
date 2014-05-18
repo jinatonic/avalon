@@ -34,7 +34,7 @@
                 android:id="@+id/client_setup_teaser_other_info"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:textSize="20dp"
+                android:textSize="@dimen/default_text_size"
                 android:alpha="0"
                 android:gravity="center"
                 android:layout_gravity="center"
@@ -44,7 +44,6 @@
                 android:id="@+id/client_setup_teaser_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="center"
                 android:alpha="0"
                 android:layout_gravity="center"/>
 
@@ -52,7 +51,7 @@
                 android:id="@+id/client_setup_teaser_instruction_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:textSize="20dp"
+                android:textSize="@dimen/default_text_size"
                 android:text="@string/assignment_instructions"
                 android:alpha="0"
                 android:gravity="center"
