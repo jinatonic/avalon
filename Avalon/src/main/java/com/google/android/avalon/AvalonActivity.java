@@ -98,10 +98,6 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
         IntentFilter filter = new IntentFilter(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT);
         registerReceiver(mReceiver, filter);
 
-        // TODO REMOVE ME BEFORE COMMIT
-        mGameProgression = GAME_IN_PROGRESS;
-        mIsServer = false;
-
         // Resume fragment states and reset pointers
         updateFragment();
 

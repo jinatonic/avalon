@@ -115,7 +115,7 @@ public class ClientFragment extends Fragment {
 
     private void setRoleAssignmentText(RoleAssignment assignment) {
         if (assignment == null) return;
-        
+
         mRoleAssignmentText.setText(assignment.role.name());
 
         if (assignment.seenPlayers.size() == 0) {
