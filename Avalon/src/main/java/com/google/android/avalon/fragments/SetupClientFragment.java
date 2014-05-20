@@ -27,7 +27,7 @@ import java.util.HashSet;
 public class SetupClientFragment extends Fragment {
 
     private static final String SHOW_KEY = "show_key";
-    private static final int TIME_DELAY_FOR_ANIM = 7000;    // ms
+    private static final long TIME_DELAY_FOR_ANIM = 7000;    // ms
 
     private ClientGameStateController mClientGameStateController;
     private UiChangedListener mUiChangedListener;
@@ -60,6 +60,9 @@ public class SetupClientFragment extends Fragment {
         outState.putBoolean(SHOW_KEY, mShowStatus);
     }
 
+    /**
+     * Update the UI based on the current game state.
+     */
     public void update() {
         ClientGameState gameState = mClientGameStateController.getCurrentGameState();
         mShowStatus = gameState.player != null;     // we are connected if we sent out PlayerInfo

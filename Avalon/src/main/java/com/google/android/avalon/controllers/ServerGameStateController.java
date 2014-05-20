@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.google.android.avalon.model.AvalonRole;
 import com.google.android.avalon.model.BoardCampaignInfo;
+import com.google.android.avalon.model.messages.AssassinResponse;
 import com.google.android.avalon.model.messages.AvalonMessage;
 import com.google.android.avalon.model.GameConfiguration;
 import com.google.android.avalon.model.messages.GameOverMessage;
@@ -23,8 +24,6 @@ import com.google.android.avalon.model.ServerGameState;
 import com.google.android.avalon.model.messages.ToBtMessageWrapper;
 import com.google.android.avalon.rules.AssignmentFactory;
 import com.google.android.avalon.rules.IllegalConfigurationException;
-
-import java.util.Arrays;
 
 /**
  * Created by jinyan on 5/14/14.
@@ -187,6 +186,24 @@ public class ServerGameStateController extends GameStateController {
             mGameState.currentLady = req.player;
         }
 
+        // AssassinResponse, check if evil killed Merlin.
+        else if (msg instanceof AssassinResponse) {
+            if (!mGameState.waitingForAssassin) {
+                return showWarningToast(msg);
+            }
+
+            PlayerInfo merlin = null;
+            for (RoleAssignment assignment : mGameState.assignments.assignments) {
+                if (assignment.role.equals(AvalonRole.MERLIN)) {
+                    merlin = assignment.player;
+                    break;
+                }
+            }
+
+            boolean killedMerlin = ((AssassinResponse) msg).target.equals(merlin);
+            gameOver(!killedMerlin, true /* force */);
+        }
+
         // QuestProposal, save it in the state variable and broadcast it to all players
         else if (msg instanceof QuestProposal) {
             if (!mGameState.needQuestProposal) {
@@ -246,7 +263,7 @@ public class ServerGameStateController extends GameStateController {
                     mGameState.currentNumAttempts++;
                     if (mGameState.currentNumAttempts > 4) {
                         // auto-game over if we fail 5 proposals
-                        gameOver(false);
+                        gameOver(false /* goodWon */, false /* force */);
                     } else {
                         advanceKingAndRequestProposal();
                     }
@@ -317,9 +334,11 @@ public class ServerGameStateController extends GameStateController {
         sendBulkMessages(wrapper);
     }
 
-    private void gameOver(boolean goodWon) {
-        if (goodWon && mConfig.specialRoles.contains(AvalonRole.MERLIN)) {
-            // TODO good won and we have merlin, handle assassination attempt.
+    private void gameOver(boolean goodWon, boolean force) {
+        if (!force && goodWon && mConfig.specialRoles.contains(AvalonRole.MERLIN)) {
+            // Good won and we have merlin, handle assassination attempt.
+            mGameState.waitingForAssassin = true;
+            return;
         }
         broadcastMessageToAllPlayers(new GameOverMessage(goodWon));
         mGameState.gameOver = true;
@@ -339,7 +358,7 @@ public class ServerGameStateController extends GameStateController {
             }
         }
         if (numSuccess >= 3 || mGameState.currQuestIndex() - numSuccess >= 3) {
-            gameOver(numSuccess >= 3);
+            gameOver(numSuccess >= 3, false);
         }
 
         // If there is a lady of the lake and it's past 2nd quest, set lady flag

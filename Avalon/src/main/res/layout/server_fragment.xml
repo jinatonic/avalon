@@ -1,13 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/server_fragment_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextView
+    <!-- game board state -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="REMOVE ME I AM DUMMY SERVER"/>
+        android:orientation="vertical"
+        android:layout_gravity="center">
 
-</LinearLayout>
+        <!-- Game status text -->
+        <TextView
+            android:id="@+id/server_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/large_text_size"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="REMOVE ME IM A DUMMY STATUS" />
+
+        <!-- center of the game board, this represents the main quests -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/server_quest_1"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_margin="25dp"
+                android:src="@drawable/check"/>
+
+            <ImageView
+                android:id="@+id/server_quest_2"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_margin="25dp"
+                android:src="@drawable/check"/>
+
+            <ImageView
+                android:id="@+id/server_quest_3"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_margin="25dp"
+                android:src="@drawable/check"/>
+
+            <ImageView
+                android:id="@+id/server_quest_4"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_margin="25dp"
+                android:src="@drawable/check"/>
+
+            <ImageView
+                android:id="@+id/server_quest_5"
+                android:layout_width="75dp"
+                android:layout_height="75dp"
+                android:layout_margin="25dp"
+                android:src="@drawable/check"/>
+
+        </LinearLayout>
+
+        <!-- quest attempts on the bottom right -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="right"
+            android:paddingRight="20dp">
+
+            <ImageView
+                android:id="@+id/server_attempts_1"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:src="@drawable/redx"/>
+
+            <ImageView
+                android:id="@+id/server_attempts_2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:src="@drawable/redx"/>
+
+            <ImageView
+                android:id="@+id/server_attempts_3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:src="@drawable/redx"/>
+
+            <ImageView
+                android:id="@+id/server_attempts_4"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:src="@drawable/redx"/>
+
+            <ImageView
+                android:id="@+id/server_attempts_5"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="30dp"
+                android:src="@drawable/redx"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/server_overlay_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/overlay_shadow"
+        android:visibility="gone"
+        android:gravity="center"
+        android:alpha="0">
+
+        <TextView
+            android:id="@+id/server_overlay_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="30dp"
+            android:background="@android:color/white"
+            android:textSize="@dimen/large_text_size"/>
+
+    </LinearLayout>
+
+</FrameLayout>

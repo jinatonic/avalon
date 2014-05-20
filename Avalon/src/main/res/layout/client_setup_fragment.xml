@@ -22,7 +22,7 @@
         android:id="@+id/client_setup_teaser_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#70000000"
+        android:background="@color/overlay_shadow"
         android:visibility="gone">
         <FrameLayout
             android:layout_width="match_parent"

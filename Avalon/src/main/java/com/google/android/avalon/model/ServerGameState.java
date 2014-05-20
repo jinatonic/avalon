@@ -29,6 +29,9 @@ public class ServerGameState implements Serializable {
 
     public List<Boolean> quests = new LinkedList<Boolean>();
     public int currentNumAttempts;
+
+    public boolean waitingForAssassin;
+
     public boolean gameOver;
     public boolean goodWon; // shouldn't be checked unless gameOver = true
 

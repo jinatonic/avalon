@@ -218,9 +218,9 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
                 break;
             case GAME_IN_PROGRESS:
                 if (mIsServer) {
-                    mSetupServerFragment.update();
+                    mServerFragment.update();
                 } else {
-                    mSetupClientFragment.update();
+                    mClientFragment.update();
                 }
                 break;
             default:

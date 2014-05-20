@@ -238,6 +238,9 @@ public class BluetoothClientService extends BluetoothService {
 
                 // Notify the controller of the change
                 notifyControllerAndUi(mPlayerInfo);
+
+                // Unregister the receiver since we found all the players we need
+                unregisterReceiver(mBtScanReceiver);
             } finally {
                 if (mServerSocket == null) {
                     mSeenAddresses.add(mDevice.getAddress());

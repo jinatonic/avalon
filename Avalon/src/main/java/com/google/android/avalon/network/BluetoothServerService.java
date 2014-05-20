@@ -67,6 +67,17 @@ public class BluetoothServerService extends BluetoothService {
         Log.d(TAG, "BluetoothServerService getting destroyed");
         super.onDestroy();
         mAcceptThread.cancel();
+        for (BluetoothSocket socket : mSocketReaderWriterMap.keySet()) {
+            SocketReaderWriterWrapper wrapper = mSocketReaderWriterMap.get(socket);
+            wrapper.reader.terminate();
+            wrapper.writer.terminate();
+            try {
+                socket.close();
+            } catch (IOException e) { }
+        }
+
+        mSocketReaderWriterMap.clear();
+        mPlayerSocketMap.clear();
     }
 
     @Override

@@ -30,4 +30,9 @@
     <string name="client_vote_for_proposal">Please vote for the following proposal.</string>
     <string name="client_vote_for_exec">Please pass or fail this quest.</string>
 
+    <string name="server_proposal_required">Please select your proposed team.</string>
+    <string name="server_lady_required">Please select the target for Lady.</string>
+    <string name="server_assassin_required">Please select who you think is Merlin.</string>
+    <string name="server_player_response_required">Waiting for player\'s responses.</string>
+
 </resources>

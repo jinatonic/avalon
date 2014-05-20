@@ -92,6 +92,9 @@ public class ClientFragment extends Fragment {
         });
     }
 
+    /**
+     * Update the UI based on the current game state.
+     */
     public void update() {
         ClientGameState gameState = mClientGameStateController.getCurrentGameState();
         if (gameState.proposal != null) {

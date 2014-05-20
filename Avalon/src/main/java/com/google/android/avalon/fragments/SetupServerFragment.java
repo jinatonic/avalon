@@ -53,6 +53,9 @@ public class SetupServerFragment extends Fragment {
         return v;
     }
 
+    /**
+     * Update the UI based on the current game state.
+     */
     public void update() {
         // This is the only data that should be affected by the clients.
         mPlayerAdapter.notifyDataSetChanged();
