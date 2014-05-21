@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -95,12 +96,9 @@ public class ServerFragment extends Fragment {
 
         mHandler = new Handler();
 
-        View playerViews = organizePlayerViews(inflater, parent);
-        if (playerViews != null) {
-            ((FrameLayout) v.findViewById(R.id.server_fragment_container)).addView(playerViews);
-        } else {
-            Log.e(TAG, "organizePlayerViews returned null");
-        }
+        setupNumberDependentViews(inflater, parent, v);
+
+        update();
 
         return v;
     }
@@ -115,80 +113,103 @@ public class ServerFragment extends Fragment {
     }
 
     /**
-     * Helper function to set up the overlay player views.
+     * Helper function to set up all the views that are dependent on the number of players.
      */
-    private View organizePlayerViews(LayoutInflater inflater, ViewGroup parent) {
+    private void setupNumberDependentViews(LayoutInflater inflater, ViewGroup parent, View v) {
         List<PlayerInfo> players = new ArrayList<PlayerInfo>(mSelectedPlayers.keySet());
         View[] contains = new View[mSelectedPlayers.size()];
         TextView[] names = new TextView[mSelectedPlayers.size()];
 
-        View v = null;
+        View playerViews = null;
         switch (mSelectedPlayers.size()) {
             case 5:
-                v = inflater.inflate(R.layout.player_5_overlay, parent, false);
-                contains[0] = v.findViewById(R.id.player1_container);
-                contains[1] = v.findViewById(R.id.player2_container);
-                contains[2] = v.findViewById(R.id.player3_container);
-                contains[3] = v.findViewById(R.id.player4_container);
-                contains[4] = v.findViewById(R.id.player5_container);
+                playerViews = inflater.inflate(R.layout.player_5_overlay, parent, false);
+                contains[0] = playerViews.findViewById(R.id.player1_container);
+                contains[1] = playerViews.findViewById(R.id.player2_container);
+                contains[2] = playerViews.findViewById(R.id.player3_container);
+                contains[3] = playerViews.findViewById(R.id.player4_container);
+                contains[4] = playerViews.findViewById(R.id.player5_container);
 
-                names[0] = (TextView) v.findViewById(R.id.player1_name);
-                names[1] = (TextView) v.findViewById(R.id.player2_name);
-                names[2] = (TextView) v.findViewById(R.id.player3_name);
-                names[3] = (TextView) v.findViewById(R.id.player4_name);
-                names[4] = (TextView) v.findViewById(R.id.player5_name);
+                names[0] = (TextView) playerViews.findViewById(R.id.player1_name);
+                names[1] = (TextView) playerViews.findViewById(R.id.player2_name);
+                names[2] = (TextView) playerViews.findViewById(R.id.player3_name);
+                names[3] = (TextView) playerViews.findViewById(R.id.player4_name);
+                names[4] = (TextView) playerViews.findViewById(R.id.player5_name);
 
                 for (int i = 0; i < mSelectedPlayers.size(); i++) {
                     setupViewInfo(contains[i], names[i], players.get(i));
                 }
+
+                // Set up quests
+                mQuests[0].setImageResource(R.drawable.campaign_1_player_2);
+                mQuests[1].setImageResource(R.drawable.campaign_2_player_3);
+                mQuests[2].setImageResource(R.drawable.campaign_3_player_2);
+                mQuests[3].setImageResource(R.drawable.campaign_4_player_3);
+                mQuests[4].setImageResource(R.drawable.campaign_5_player_3);
                 break;
             case 6:
-                v = inflater.inflate(R.layout.player_6_overlay, parent, false);
-                contains[0] = v.findViewById(R.id.player1_container);
-                contains[1] = v.findViewById(R.id.player2_container);
-                contains[2] = v.findViewById(R.id.player3_container);
-                contains[3] = v.findViewById(R.id.player4_container);
-                contains[4] = v.findViewById(R.id.player5_container);
-                contains[5] = v.findViewById(R.id.player6_container);
+                playerViews = inflater.inflate(R.layout.player_6_overlay, parent, false);
+                contains[0] = playerViews.findViewById(R.id.player1_container);
+                contains[1] = playerViews.findViewById(R.id.player2_container);
+                contains[2] = playerViews.findViewById(R.id.player3_container);
+                contains[3] = playerViews.findViewById(R.id.player4_container);
+                contains[4] = playerViews.findViewById(R.id.player5_container);
+                contains[5] = playerViews.findViewById(R.id.player6_container);
 
-                names[0] = (TextView) v.findViewById(R.id.player1_name);
-                names[1] = (TextView) v.findViewById(R.id.player2_name);
-                names[2] = (TextView) v.findViewById(R.id.player3_name);
-                names[3] = (TextView) v.findViewById(R.id.player4_name);
-                names[4] = (TextView) v.findViewById(R.id.player5_name);
-                names[5] = (TextView) v.findViewById(R.id.player6_name);
+                names[0] = (TextView) playerViews.findViewById(R.id.player1_name);
+                names[1] = (TextView) playerViews.findViewById(R.id.player2_name);
+                names[2] = (TextView) playerViews.findViewById(R.id.player3_name);
+                names[3] = (TextView) playerViews.findViewById(R.id.player4_name);
+                names[4] = (TextView) playerViews.findViewById(R.id.player5_name);
+                names[5] = (TextView) playerViews.findViewById(R.id.player6_name);
 
                 for (int i = 0; i < mSelectedPlayers.size(); i++) {
                     setupViewInfo(contains[i], names[i], players.get(i));
                 }
+
+                // Set up quests
+                mQuests[0].setImageResource(R.drawable.campaign_1_player_2);
+                mQuests[1].setImageResource(R.drawable.campaign_2_player_3);
+                mQuests[2].setImageResource(R.drawable.campaign_3_player_4);
+                mQuests[3].setImageResource(R.drawable.campaign_4_player_3);
+                mQuests[4].setImageResource(R.drawable.campaign_5_player_4);
                 break;
             case 7:
-                v = inflater.inflate(R.layout.player_7_overlay, parent, false);
-                contains[0] = v.findViewById(R.id.player1_container);
-                contains[1] = v.findViewById(R.id.player2_container);
-                contains[2] = v.findViewById(R.id.player3_container);
-                contains[3] = v.findViewById(R.id.player4_container);
-                contains[4] = v.findViewById(R.id.player5_container);
-                contains[5] = v.findViewById(R.id.player6_container);
-                contains[6] = v.findViewById(R.id.player7_container);
+                playerViews = inflater.inflate(R.layout.player_7_overlay, parent, false);
+                contains[0] = playerViews.findViewById(R.id.player1_container);
+                contains[1] = playerViews.findViewById(R.id.player2_container);
+                contains[2] = playerViews.findViewById(R.id.player3_container);
+                contains[3] = playerViews.findViewById(R.id.player4_container);
+                contains[4] = playerViews.findViewById(R.id.player5_container);
+                contains[5] = playerViews.findViewById(R.id.player6_container);
+                contains[6] = playerViews.findViewById(R.id.player7_container);
 
-                names[0] = (TextView) v.findViewById(R.id.player1_name);
-                names[1] = (TextView) v.findViewById(R.id.player2_name);
-                names[2] = (TextView) v.findViewById(R.id.player3_name);
-                names[3] = (TextView) v.findViewById(R.id.player4_name);
-                names[4] = (TextView) v.findViewById(R.id.player5_name);
-                names[5] = (TextView) v.findViewById(R.id.player6_name);
-                names[6] = (TextView) v.findViewById(R.id.player7_name);
+                names[0] = (TextView) playerViews.findViewById(R.id.player1_name);
+                names[1] = (TextView) playerViews.findViewById(R.id.player2_name);
+                names[2] = (TextView) playerViews.findViewById(R.id.player3_name);
+                names[3] = (TextView) playerViews.findViewById(R.id.player4_name);
+                names[4] = (TextView) playerViews.findViewById(R.id.player5_name);
+                names[5] = (TextView) playerViews.findViewById(R.id.player6_name);
+                names[6] = (TextView) playerViews.findViewById(R.id.player7_name);
 
                 for (int i = 0; i < mSelectedPlayers.size(); i++) {
                     setupViewInfo(contains[i], names[i], players.get(i));
                 }
+
+                // Set up quests
+                mQuests[0].setImageResource(R.drawable.campaign_1_player_2);
+                mQuests[1].setImageResource(R.drawable.campaign_2_player_3);
+                mQuests[2].setImageResource(R.drawable.campaign_3_player_3);
+                mQuests[3].setImageResource(R.drawable.campaign_4_player_4);
+                mQuests[4].setImageResource(R.drawable.campaign_5_player_4);
                 break;
             default:
+                Log.e(TAG, "organizePlayerViews returned null");
                 break;
         }
 
-        return v;
+        // Add the child to the inflated fragment view
+        ((FrameLayout) v.findViewById(R.id.server_fragment_container)).addView(playerViews);
     }
 
     /**
@@ -252,7 +273,6 @@ public class ServerFragment extends Fragment {
             if (passed) {
                 // TODO: Set the appropriate image for mQuests[i]
             } else {
-
             }
         }
 

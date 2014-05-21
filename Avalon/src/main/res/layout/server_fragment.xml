@@ -3,7 +3,8 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/server_fragment_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/medieval_background">
 
     <!-- game board state -->
     <LinearLayout
@@ -33,36 +34,31 @@
                 android:id="@+id/server_quest_1"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_margin="25dp"
-                android:src="@drawable/check"/>
+                android:layout_margin="25dp"/>
 
             <ImageView
                 android:id="@+id/server_quest_2"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_margin="25dp"
-                android:src="@drawable/check"/>
+                android:layout_margin="25dp"/>
 
             <ImageView
                 android:id="@+id/server_quest_3"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_margin="25dp"
-                android:src="@drawable/check"/>
+                android:layout_margin="25dp"/>
 
             <ImageView
                 android:id="@+id/server_quest_4"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_margin="25dp"
-                android:src="@drawable/check"/>
+                android:layout_margin="25dp"/>
 
             <ImageView
                 android:id="@+id/server_quest_5"
                 android:layout_width="75dp"
                 android:layout_height="75dp"
-                android:layout_margin="25dp"
-                android:src="@drawable/check"/>
+                android:layout_margin="25dp"/>
 
         </LinearLayout>
 
@@ -79,35 +75,35 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="30dp"
-                android:src="@drawable/redx"/>
+                android:src="@drawable/attempt_1"/>
 
             <ImageView
                 android:id="@+id/server_attempts_2"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="30dp"
-                android:src="@drawable/redx"/>
+                android:src="@drawable/attempt_2"/>
 
             <ImageView
                 android:id="@+id/server_attempts_3"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="30dp"
-                android:src="@drawable/redx"/>
+                android:src="@drawable/attempt_3"/>
 
             <ImageView
                 android:id="@+id/server_attempts_4"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="30dp"
-                android:src="@drawable/redx"/>
+                android:src="@drawable/attempt_4"/>
 
             <ImageView
                 android:id="@+id/server_attempts_5"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginRight="30dp"
-                android:src="@drawable/redx"/>
+                android:src="@drawable/attempt_5"/>
 
         </LinearLayout>
 
