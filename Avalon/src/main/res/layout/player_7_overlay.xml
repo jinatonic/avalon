@@ -39,10 +39,7 @@
 
                 <TextView
                     android:id="@+id/player1_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/player_img_height"
-                    android:gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingLeft="@dimen/player_name_to_img_padding"/>
 
             </LinearLayout>
@@ -65,10 +62,7 @@
 
                 <TextView
                     android:id="@+id/player2_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/player_img_height"
-                    android:gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingRight="@dimen/player_name_to_img_padding"/>
 
                 <ImageView
@@ -110,10 +104,7 @@
 
                 <TextView
                     android:id="@+id/player3_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingBottom="@dimen/player_name_to_img_padding"/>
 
                 <ImageView
@@ -160,10 +151,7 @@
 
                 <TextView
                     android:id="@+id/player4_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/player_img_height"
-                    android:gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingLeft="@dimen/player_name_to_img_padding"/>
 
             </LinearLayout>
@@ -191,11 +179,8 @@
 
                 <TextView
                     android:id="@+id/player5_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/player_img_height"
-                    android:gravity="center"
-                    android:textSize="@dimen/default_text_size"
-                    android:paddingRight="@dimen/player_name_to_img_padding"/>
+                    style="@style/PlayerNameText"
+                    android:paddingLeft="@dimen/player_name_to_img_padding"/>
 
             </LinearLayout>
         </LinearLayout>
@@ -217,10 +202,7 @@
 
                 <TextView
                     android:id="@+id/player6_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/player_img_height"
-                    android:gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingRight="@dimen/player_name_to_img_padding"/>
 
                 <ImageView
@@ -257,10 +239,7 @@
 
                 <TextView
                     android:id="@+id/player7_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textSize="@dimen/default_text_size"
+                    style="@style/PlayerNameText"
                     android:paddingBottom="@dimen/player_name_to_img_padding"/>
 
                 <ImageView
