@@ -1,125 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="200dp"
-        android:paddingRight="200dp"
-        android:paddingTop="20dp"
-        android:layout_alignParentTop="true">
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/player_to_side_padding"
+        android:layout_gravity="top">
 
+        <!-- Player 1 -->
         <LinearLayout
-            android:id="@+id/player1_container"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_alignParentLeft="true"
-            android:background="@drawable/player_icon_horizontal"
-            android:padding="20dp">
+            android:layout_weight="1"
+            android:gravity="center">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/check"/>
-
-            <TextView
-                android:id="@+id/player1_name"
+            <LinearLayout
+                android:id="@+id/player1_container"
                 android:layout_width="wrap_content"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:textSize="@dimen/default_text_size"
-                android:paddingLeft="20dp"/>
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
 
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+                <TextView
+                    android:id="@+id/player1_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingLeft="@dimen/player_name_to_img_padding"/>
+
+            </LinearLayout>
         </LinearLayout>
 
+        <!-- Player 2 -->
         <LinearLayout
-            android:id="@+id/player2_container"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/player_icon_horizontal"
-            android:padding="20dp">
+            android:layout_weight="1"
+            android:gravity="center">
 
-            <TextView
-                android:id="@+id/player2_name"
+            <LinearLayout
+                android:id="@+id/player2_container"
                 android:layout_width="wrap_content"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:textSize="@dimen/default_text_size"
-                android:paddingRight="20dp"/>
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/check"/>
+                <TextView
+                    android:id="@+id/player2_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingRight="@dimen/player_name_to_img_padding"/>
 
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
         </LinearLayout>
-    </RelativeLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:paddingBottom="150dp"
-        android:gravity="bottom"
-        android:layout_alignParentRight="true"
-        android:paddingRight="20dp">
+        android:orientation="vertical"
+        android:paddingRight="@dimen/player_to_side_padding"
+        android:layout_gravity="right">
 
+        <!-- dummy placeholder for weight distribution -->
         <LinearLayout
-            android:id="@+id/player3_container"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/player_icon_vertical"
-            android:padding="20dp">
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-            <TextView
-                android:id="@+id/player3_name"
+        <!-- Player 3 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:gravity="center">
+            <LinearLayout
+                android:id="@+id/player3_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textSize="@dimen/default_text_size"
-                android:paddingBottom="20dp"/>
+                android:orientation="vertical"
+                android:background="@drawable/player_icon_vertical"
+                android:padding="@dimen/player_wrapper_padding">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/check"/>
+                <TextView
+                    android:id="@+id/player3_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingBottom="@dimen/player_name_to_img_padding"/>
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
 
             </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:paddingBottom="20dp">
+        android:paddingBottom="@dimen/player_to_side_padding"
+        android:layout_gravity="bottom">
 
+        <!-- Player 4 -->
         <LinearLayout
             android:id="@+id/player4_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@drawable/player_icon_horizontal"
-            android:padding="20dp">
+            android:padding="@dimen/player_wrapper_padding">
 
             <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="@dimen/player_img_width"
+                android:layout_height="@dimen/player_img_height"
                 android:src="@drawable/check"/>
 
             <TextView
                 android:id="@+id/player4_name"
                 android:layout_width="wrap_content"
-                android:layout_height="60dp"
+                android:layout_height="@dimen/player_img_height"
                 android:gravity="center"
                 android:textSize="@dimen/default_text_size"
-                android:paddingLeft="20dp"/>
+                android:paddingLeft="@dimen/player_name_to_img_padding"/>
 
         </LinearLayout>
     </LinearLayout>
@@ -127,33 +154,46 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:paddingBottom="150dp"
-        android:gravity="bottom"
-        android:layout_alignParentLeft="true"
-        android:paddingLeft="20dp">
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/player_to_side_padding"
+        android:layout_gravity="left">
 
+        <!-- dummy placeholder for weight distribution -->
         <LinearLayout
-            android:id="@+id/player5_container"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/player_icon_vertical"
-            android:padding="20dp">
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-            <TextView
-                android:id="@+id/player5_name"
+        <!-- Player 5 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player5_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textSize="@dimen/default_text_size"
-                android:paddingBottom="20dp"/>
+                android:orientation="vertical"
+                android:background="@drawable/player_icon_vertical"
+                android:padding="@dimen/player_wrapper_padding">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/check"/>
+                <TextView
+                    android:id="@+id/player5_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingBottom="@dimen/player_name_to_img_padding"/>
 
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
-</RelativeLayout>
+</FrameLayout>
