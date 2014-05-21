@@ -119,34 +119,70 @@ public class ServerFragment extends Fragment {
      */
     private View organizePlayerViews(LayoutInflater inflater, ViewGroup parent) {
         List<PlayerInfo> players = new ArrayList<PlayerInfo>(mSelectedPlayers.keySet());
+        View[] contains = new View[mSelectedPlayers.size()];
+        TextView[] names = new TextView[mSelectedPlayers.size()];
 
         View v = null;
         switch (mSelectedPlayers.size()) {
             case 5:
                 v = inflater.inflate(R.layout.player_5_overlay, parent, false);
-                View container1 = v.findViewById(R.id.player1_container);
-                View container2 = v.findViewById(R.id.player2_container);
-                View container3 = v.findViewById(R.id.player3_container);
-                View container4 = v.findViewById(R.id.player4_container);
-                View container5 = v.findViewById(R.id.player5_container);
+                contains[0] = v.findViewById(R.id.player1_container);
+                contains[1] = v.findViewById(R.id.player2_container);
+                contains[2] = v.findViewById(R.id.player3_container);
+                contains[3] = v.findViewById(R.id.player4_container);
+                contains[4] = v.findViewById(R.id.player5_container);
 
-                TextView player1 = (TextView) v.findViewById(R.id.player1_name);
-                TextView player2 = (TextView) v.findViewById(R.id.player2_name);
-                TextView player3 = (TextView) v.findViewById(R.id.player3_name);
-                TextView player4 = (TextView) v.findViewById(R.id.player4_name);
-                TextView player5 = (TextView) v.findViewById(R.id.player5_name);
+                names[0] = (TextView) v.findViewById(R.id.player1_name);
+                names[1] = (TextView) v.findViewById(R.id.player2_name);
+                names[2] = (TextView) v.findViewById(R.id.player3_name);
+                names[3] = (TextView) v.findViewById(R.id.player4_name);
+                names[4] = (TextView) v.findViewById(R.id.player5_name);
 
-                setupViewInfo(container1, player1, players.get(0));
-                setupViewInfo(container2, player2, players.get(1));
-                setupViewInfo(container3, player3, players.get(2));
-                setupViewInfo(container4, player4, players.get(3));
-                setupViewInfo(container5, player5, players.get(4));
+                for (int i = 0; i < mSelectedPlayers.size(); i++) {
+                    setupViewInfo(contains[i], names[i], players.get(i));
+                }
                 break;
             case 6:
                 v = inflater.inflate(R.layout.player_6_overlay, parent, false);
+                contains[0] = v.findViewById(R.id.player1_container);
+                contains[1] = v.findViewById(R.id.player2_container);
+                contains[2] = v.findViewById(R.id.player3_container);
+                contains[3] = v.findViewById(R.id.player4_container);
+                contains[4] = v.findViewById(R.id.player5_container);
+                contains[5] = v.findViewById(R.id.player6_container);
+
+                names[0] = (TextView) v.findViewById(R.id.player1_name);
+                names[1] = (TextView) v.findViewById(R.id.player2_name);
+                names[2] = (TextView) v.findViewById(R.id.player3_name);
+                names[3] = (TextView) v.findViewById(R.id.player4_name);
+                names[4] = (TextView) v.findViewById(R.id.player5_name);
+                names[5] = (TextView) v.findViewById(R.id.player6_name);
+
+                for (int i = 0; i < mSelectedPlayers.size(); i++) {
+                    setupViewInfo(contains[i], names[i], players.get(i));
+                }
                 break;
             case 7:
                 v = inflater.inflate(R.layout.player_7_overlay, parent, false);
+                contains[0] = v.findViewById(R.id.player1_container);
+                contains[1] = v.findViewById(R.id.player2_container);
+                contains[2] = v.findViewById(R.id.player3_container);
+                contains[3] = v.findViewById(R.id.player4_container);
+                contains[4] = v.findViewById(R.id.player5_container);
+                contains[5] = v.findViewById(R.id.player6_container);
+                contains[6] = v.findViewById(R.id.player7_container);
+
+                names[0] = (TextView) v.findViewById(R.id.player1_name);
+                names[1] = (TextView) v.findViewById(R.id.player2_name);
+                names[2] = (TextView) v.findViewById(R.id.player3_name);
+                names[3] = (TextView) v.findViewById(R.id.player4_name);
+                names[4] = (TextView) v.findViewById(R.id.player5_name);
+                names[5] = (TextView) v.findViewById(R.id.player6_name);
+                names[6] = (TextView) v.findViewById(R.id.player7_name);
+
+                for (int i = 0; i < mSelectedPlayers.size(); i++) {
+                    setupViewInfo(contains[i], names[i], players.get(i));
+                }
                 break;
             default:
                 break;

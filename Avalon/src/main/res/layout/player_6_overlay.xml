@@ -1,8 +1,225 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/player_to_side_padding"
+        android:layout_gravity="top">
+
+        <!-- Player 1 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player1_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+                <TextView
+                    android:id="@+id/player1_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingLeft="@dimen/player_name_to_img_padding"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Player 2 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player2_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
+
+                <TextView
+                    android:id="@+id/player2_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingRight="@dimen/player_name_to_img_padding"/>
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingRight="@dimen/player_to_side_padding"
+        android:layout_gravity="right">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <!-- Player 3 -->
+            <LinearLayout
+                android:id="@+id/player3_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/player_icon_vertical"
+                android:padding="@dimen/player_wrapper_padding">
+
+                <TextView
+                    android:id="@+id/player3_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingBottom="@dimen/player_name_to_img_padding"/>
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/player_to_side_padding"
+        android:layout_gravity="bottom">
+
+        <!-- Player 4 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player4_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+                <TextView
+                    android:id="@+id/player4_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingLeft="@dimen/player_name_to_img_padding"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Player 5 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player5_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/player_wrapper_padding"
+                android:background="@drawable/player_icon_horizontal">
+
+                <TextView
+                    android:id="@+id/player5_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/player_img_height"
+                    android:gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingRight="@dimen/player_name_to_img_padding"/>
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/player_to_side_padding"
+        android:layout_gravity="left">
+
+        <!-- Player 6 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/player6_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/player_icon_vertical"
+                android:padding="@dimen/player_wrapper_padding">
+
+                <TextView
+                    android:id="@+id/player6_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="@dimen/default_text_size"
+                    android:paddingBottom="@dimen/player_name_to_img_padding"/>
+
+                <ImageView
+                    android:layout_width="@dimen/player_img_width"
+                    android:layout_height="@dimen/player_img_height"
+                    android:src="@drawable/check"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
