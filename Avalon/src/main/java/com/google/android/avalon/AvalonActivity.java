@@ -35,6 +35,8 @@ import com.google.android.avalon.fragments.SetupClientFragment;
 import com.google.android.avalon.fragments.SetupServerFragment;
 import com.google.android.avalon.interfaces.RoleSelectorCallback;
 import com.google.android.avalon.interfaces.UiChangedListener;
+import com.google.android.avalon.model.GameConfiguration;
+import com.google.android.avalon.model.messages.GameStartMessage;
 import com.google.android.avalon.model.messages.PlayerInfo;
 import com.google.android.avalon.network.BluetoothClientService;
 import com.google.android.avalon.network.BluetoothServerService;
@@ -43,7 +45,8 @@ import com.google.android.avalon.network.ServiceMessageProtocol;
 import java.util.UUID;
 
 
-public class AvalonActivity extends Activity implements RoleSelectorCallback, UiChangedListener {
+public class AvalonActivity extends Activity implements RoleSelectorCallback, UiChangedListener,
+        ServerFragment.AcceptDialogCallback {
     private static final int DEFAULT_NUM_PLAYERS = 7;
     private static final int REQUEST_ENABLE_BT = 1;
     private static final String IS_SERVER_KEY = "is_server_key";
@@ -76,6 +79,10 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Remove title bar
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //Remove notification bar
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_avalon);
 
@@ -89,14 +96,30 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
 
         // We always instantiate everything just for simplicity. Memory overhead should be minimal
         // since for the fragments we don't actually inflate any of the views unnecessarily.
+        mServerGameStateController = ServerGameStateController.get(this);
+        mClientGameStateController = ClientGameStateController.get(this);
+
+        /** TODO: REMOVE ME DEBUGGING **/
+        mGameProgression = GAME_IN_PROGRESS;
+        mIsServer = true;
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Jin"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Connie"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Cynthia"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Daniel"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Sampson"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("James"));
+        mServerGameStateController.processAvalonMessage(new PlayerInfo("Charles"));
+        GameConfiguration config = new GameConfiguration();
+        config.numPlayers = 7;
+        config.enableLadyOfTheLake = true;
+        mServerGameStateController.setConfig(config);
+        mServerGameStateController.processAvalonMessage(new GameStartMessage());
+
         mRoleSelectionFragment = new RoleSelectionFragment();
         mSetupServerFragment = new SetupServerFragment();
         mSetupClientFragment = new SetupClientFragment();
         mServerFragment = new ServerFragment();
         mClientFragment = new ClientFragment();
-
-        mServerGameStateController = ServerGameStateController.get(this);
-        mClientGameStateController = ClientGameStateController.get(this);
 
         mReceiver = new BtMessageReceiver();
         IntentFilter filter = new IntentFilter(ServiceMessageProtocol.FROM_BT_SERVICE_INTENT);
@@ -291,6 +314,17 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
         dialog.show(fm, "error_dialog");
     }
 
+    @Override
+    public void onAcceptDialogAccept(ServerFragment.DialogContext dialogContext,
+            PlayerInfo[] players) {
+        mServerFragment.onAcceptDialogAccept(dialogContext, players);
+    }
+
+    @Override
+    public void onAcceptDialogCancel() {
+        mServerFragment.onAcceptDialogCancel();
+    }
+
     private class BtMessageReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -306,7 +340,7 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
     public static class ShowBtErrorFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            return new AlertDialog.Builder(getActivity())
+            Dialog d = new AlertDialog.Builder(getActivity())
                     .setTitle("Bluetooth required")
                     .setNeutralButton("OK", new Dialog.OnClickListener() {
                         @Override
@@ -316,6 +350,8 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
                     })
                     .setCancelable(false)
                     .create();
+            d.setCanceledOnTouchOutside(false);
+            return d;
         }
     }
 
@@ -368,6 +404,8 @@ public class AvalonActivity extends Activity implements RoleSelectorCallback, Ui
                     }
                 }
             });
+
+            dialog.setCanceledOnTouchOutside(false);
 
             return dialog;
         }

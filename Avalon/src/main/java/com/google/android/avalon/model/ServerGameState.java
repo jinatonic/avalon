@@ -7,9 +7,10 @@ import com.google.android.avalon.model.messages.QuestProposal;
 import com.google.android.avalon.model.messages.QuestProposalResponse;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by jinyan on 5/14/14.
@@ -38,13 +39,13 @@ public class ServerGameState implements Serializable {
     // Quest proposal approval
     public boolean needQuestProposal;
     public QuestProposal lastQuestProposal; // null if we are not waiting for response
-    public List<QuestProposalResponse> lastQuestProposalResponses =
-            new ArrayList<QuestProposalResponse>();
+    public Map<PlayerInfo, QuestProposalResponse> lastQuestProposalResponses =
+            new HashMap<PlayerInfo, QuestProposalResponse>();
 
     // Quest pass/fail
     public QuestExecution lastQuestExecution;   // null if we are not waiting for response
-    public List<QuestExecutionResponse> lastQuestExecutionResponses =
-            new ArrayList<QuestExecutionResponse>();
+    public Map<PlayerInfo, QuestExecutionResponse> lastQuestExecutionResponses =
+            new HashMap<PlayerInfo, QuestExecutionResponse>();
 
     public int numPlayers() {
         return players.size();
@@ -70,5 +71,9 @@ public class ServerGameState implements Serializable {
         lastQuestProposal = null;
         lastQuestExecutionResponses.clear();
         lastQuestExecution = exec;
+    }
+
+    public int getNumPlayersForCurrentQuest() {
+        return campaignInfo.numPeopleOnQuests[currQuestIndex()];
     }
 }

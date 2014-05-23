@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="id" name="name_input_editText" />
+    <item type="id" name="current_image_res_id" />
+    <item type="id" name="prev_image_res_id" />
 </resources>

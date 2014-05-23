@@ -342,14 +342,14 @@ public class ServerGameStateControllerTest extends AndroidTestCase {
         assertEquals(propResponses.size(), gameState.lastQuestProposalResponses.size());
         // For lists, we don't care about ordering
         assertTrue(new HashSet<QuestProposalResponse>(propResponses)
-                .containsAll(gameState.lastQuestProposalResponses));
+                .containsAll(gameState.lastQuestProposalResponses.values()));
 
         // Can't really verify QuestExecution object itself
         assertEquals(exec != null, gameState.lastQuestExecution != null);
         assertEquals(execResponses.size(), gameState.lastQuestExecutionResponses.size());
         // For lists, we don't care about ordering
         assertTrue(new HashSet<QuestExecutionResponse>(execResponses)
-                .containsAll(gameState.lastQuestExecutionResponses));
+                .containsAll(gameState.lastQuestExecutionResponses.values()));
         assertEquals(gameOver, gameState.gameOver);
     }
 

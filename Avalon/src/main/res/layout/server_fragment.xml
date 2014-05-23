@@ -4,7 +4,7 @@
     android:id="@+id/server_fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/medieval_background">
+    android:background="@drawable/medieval_background_edited">
 
     <!-- game board state -->
     <LinearLayout
@@ -19,9 +19,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="@dimen/large_text_size"
+            android:textColor="@android:color/white"
             android:layout_gravity="center"
-            android:gravity="center"
-            android:text="REMOVE ME IM A DUMMY STATUS" />
+            android:gravity="center" />
 
         <!-- center of the game board, this represents the main quests -->
         <LinearLayout

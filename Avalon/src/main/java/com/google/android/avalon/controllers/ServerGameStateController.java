@@ -213,8 +213,7 @@ public class ServerGameStateController extends GameStateController {
             // Check that the number of players match the number the quest needs for sanity
             // since this SHOULD be enforced by the UI.
             QuestProposal proposal = (QuestProposal) msg;
-            if (proposal.questMembers.length ==
-                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.currQuestIndex()]) {
+            if (proposal.questMembers.length == mGameState.getNumPlayersForCurrentQuest()) {
                 mGameState.setNewQuestProposal(proposal);
                 broadcastMessageToAllPlayers(msg);
             }
@@ -225,27 +224,22 @@ public class ServerGameStateController extends GameStateController {
             boolean err = mGameState.lastQuestProposal == null ||
                     mGameState.lastQuestProposalResponses.size() >= mGameState.players.size();
             QuestProposalResponse rsp = (QuestProposalResponse) msg;
-            boolean duplicate = false;
             // Make sure we don't accidentally record duplicate response
-            for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses) {
-                if (prev.player.equals(rsp.player)) {
-                    duplicate = true;
-                }
-            }
+            boolean duplicate = mGameState.lastQuestProposalResponses.containsKey(rsp.player);
 
             // check if we are expecting this message
-            if (rsp.propNum != mGameState.lastQuestProposal.propNum || duplicate || err) {
+            if (err || duplicate || rsp.propNum != mGameState.lastQuestProposal.propNum) {
                 return showWarningToast(msg);
             }
 
             // Good message, let's process it
-            mGameState.lastQuestProposalResponses.add(rsp);
+            mGameState.lastQuestProposalResponses.put(rsp.player, rsp);
 
             // Check for state advance criteria
             if (mGameState.lastQuestProposalResponses.size() == mGameState.players.size()) {
                 // Set quest state
                 int difference = 0;
-                for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses) {
+                for (QuestProposalResponse prev : mGameState.lastQuestProposalResponses.values()) {
                     difference += ((prev.approve) ? 1 : -1);
                 }
 
@@ -279,28 +273,23 @@ public class ServerGameStateController extends GameStateController {
             QuestExecutionResponse rsp = (QuestExecutionResponse) msg;
 
             // Make sure we don't accidentally record duplicate response
-            boolean duplicate = false;
-            for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
-                if (prev.player.equals(rsp.player)) {
-                    duplicate = true;
-                }
-            }
+            boolean duplicate = mGameState.lastQuestExecutionResponses.containsKey(rsp.player);
 
             // check if we are expecting this message
-            if (rsp.questNum != mGameState.lastQuestExecution.questNum || duplicate ||
-                    mGameState.lastQuestExecution == null) {
+            if (mGameState.lastQuestExecution == null ||
+                    rsp.questNum != mGameState.lastQuestExecution.questNum || duplicate) {
                 return showWarningToast(msg);
             }
 
             // Good message, let's process it
-            mGameState.lastQuestExecutionResponses.add(rsp);
+            mGameState.lastQuestExecutionResponses.put(rsp.player, rsp);
 
             // Check if we need more
             if (mGameState.lastQuestExecutionResponses.size() ==
-                    mGameState.campaignInfo.numPeopleOnQuests[mGameState.currQuestIndex()]) {
+                    mGameState.getNumPlayersForCurrentQuest()) {
                 // Set quest state
                 int numFailed = 0;
-                for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses) {
+                for (QuestExecutionResponse prev : mGameState.lastQuestExecutionResponses.values()) {
                     if (!prev.pass) {
                         numFailed++;
                     }
